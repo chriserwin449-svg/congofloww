@@ -1,0 +1,30 @@
+{
+  "name": "CongoFlow",
+  "tagline": "Le flow des événements de Kinshasa",
+  "logo": {
+    "type": "svg-inline",
+    "red": "#9B1C28",
+    "cream": "#F7F4EF",
+    "note": "Logo : lettres modernes + symbole de vague/flux ; 2 versions (rouge sur transparent, blanc cassé pour fonds sombres). Inliné directement dans le HTML."
+  },
+  "fonts": [
+    { "id": "it-400", "file": "fonts/it-regular.woff2", "family": "Inter Tight", "weight": 400 },
+    { "id": "it-500", "file": "fonts/it-500.woff2", "family": "Inter Tight", "weight": 500 },
+    { "id": "it-600", "file": "fonts/it-600.woff2", "family": "Inter Tight", "weight": 600 },
+    { "id": "it-700", "file": "fonts/it-700.woff2", "family": "Inter Tight", "weight": 700 },
+    { "id": "it-800", "file": "fonts/it-800.woff2", "family": "Inter Tight", "weight": 800 },
+    { "id": "is-400",  "file": "fonts/is-regular.woff2", "family": "Instrument Serif", "weight": 400, "style": "normal" },
+    { "id": "is-400i", "file": "fonts/is-italic.woff2", "family": "Instrument Serif", "weight": 400, "style": "italic" }
+  ],
+  "images": {
+    "posters":    { "prefix": "w-poster-", "format": "webp", "ratio": "4:5",  "ids": ["rumba", "club", "conf", "foot", "wax", "gospel", "gastro", "roof"] },
+    "scenes":     { "prefix": "w-scene-",  "format": "webp", "ratio": "3:2",  "ids": ["crowd", "friends", "dancers", "hall"] },
+    "auth":       { "prefix": "w-auth-",   "format": "webp", "ratio": "3:4",  "ids": ["concert", "dance", "orga", "street", "culture"] },
+    "authMobile": { "prefix": "w-authm-",  "format": "webp", "ratio": "9:16", "ids": ["concert", "dance", "orga", "street", "culture"] }
+  },
+  "illustrations": {
+    "type": "svg-inline",
+    "ids": ["404", "seenall", "noresults", "offline"],
+    "note": "Illustrations d'états en traits épais arrondis, rouge sombre + noir + blanc cassé."
+  }
+}

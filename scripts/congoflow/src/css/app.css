@@ -1,0 +1,68 @@
+/* ============================================================
+   CongoFlow — App shell (en-tête, navigation, états)
+   ============================================================ */
+
+.app-main { padding-top: 68px; }
+
+/* ——— En-tête ——— */
+.app-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 70;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: rgba(247,244,239,.86); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(14,14,16,.06);
+}
+.ah-logo { display: flex; flex-shrink: 0; }
+.ah-search {
+  flex: 1; display: flex; align-items: center; gap: 8px; text-align: left;
+  background: var(--card); border: 1px solid rgba(14,14,16,.09); border-radius: 999px;
+  padding: 9px 16px; color: var(--gray); font-size: .86rem; overflow: hidden; white-space: nowrap;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.ah-search:hover { border-color: rgba(155,28,40,.4); box-shadow: var(--sh-1); }
+.ah-search span { overflow: hidden; text-overflow: ellipsis; }
+.ah-me .ev-avatar { width: 38px; height: 38px; font-size: .8rem; }
+@media (max-width: 480px) { .ah-search span { display: none; } .ah-search { padding: 11px; justify-content: center; } }
+
+/* ——— Barre de navigation ——— */
+.app-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 70;
+  display: flex; justify-content: space-around; align-items: flex-end;
+  background: var(--ink); color: var(--bg);
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); border-radius: 22px 22px 0 0;
+}
+@media (min-width: 900px) {
+  .app-nav { left: 50%; transform: translateX(-50%); bottom: 18px; border-radius: 999px; padding: 8px 18px; box-shadow: var(--sh-3); }
+  .app-main { padding-bottom: 60px; }
+}
+.an-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 12px;
+  font-size: .62rem; font-weight: 600; color: rgba(247,244,239,.6); position: relative;
+  transition: color var(--t-fast), transform var(--t-fast) var(--cf-ease); border-radius: 12px;
+}
+.an-item svg { transition: transform var(--t-med) var(--cf-ease); }
+.an-item.on { color: #fff; }
+.an-item.on svg { transform: translateY(-2px); }
+.an-item:active { transform: scale(.9); }
+.an-item .notif-dot { position: absolute; top: 4px; right: 10px; }
+.an-add {
+  width: 54px; height: 54px; margin: -22px 6px 0; border-radius: 50%;
+  background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 1.7rem; font-weight: 600; box-shadow: 0 10px 24px rgba(155,28,40,.45);
+  transition: transform var(--t-fast) var(--cf-ease), background var(--t-fast);
+}
+.an-add:hover { background: var(--red-hover); transform: translateY(-3px); }
+.an-add:active { transform: scale(.92); }
+.an-add span { margin-top: -3px; }
+
+/* ——— 404 ——— */
+.notfound { min-height: 76vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; gap: 6px; }
+
+/* ——— PWA tip ——— */
+.pwa-tip { position: fixed; bottom: 86px; left: 50%; transform: translateX(-50%); z-index: 90; width: min(94vw, 430px); animation: ob-in 300ms var(--cf-ease); }
+
+/* ——— Page titre ——— */
+.page-title { font-size: 1.45rem; }
+
+/* ——— Tag hero ——— */
+.tag-hero { padding: 22px 20px; margin-top: 14px; background: linear-gradient(135deg, rgba(155,28,40,.09), rgba(14,14,16,.04)); }

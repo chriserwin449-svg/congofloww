@@ -1,0 +1,73 @@
+/* ============================================================
+   CongoFlow — Publier (4 étapes)
+   ============================================================ */
+
+.pub-page { max-width: 640px; margin: 0 auto; padding: 12px 14px 110px; }
+.pub-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pub-title { font-size: 1.2rem; }
+.pub-close { width: 38px; height: 38px; border-radius: 50%; background: rgba(14,14,16,.06); font-size: .95rem; }
+.pub-close:hover { background: rgba(14,14,16,.12); }
+.pub-progress { height: 5px; background: rgba(14,14,16,.08); border-radius: 3px; margin: 12px 0; overflow: hidden; }
+.pub-progress span { display: block; height: 100%; background: var(--red); border-radius: 3px; transition: width 340ms var(--cf-ease); }
+.pub-card { background: var(--card); border-radius: var(--r-lg); border: 1px solid rgba(14,14,16,.05); padding: 22px 18px; box-shadow: var(--sh-1); }
+.pub-card.step-in { animation: ob-in 300ms var(--cf-ease); }
+.pub-h { font-size: 1.35rem; margin-bottom: 4px; }
+.pub-nav { display: flex; gap: 12px; margin-top: 16px; }
+.pub-nav .btn { flex: 1; }
+.two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 420px) { .two-cols { grid-template-columns: 1fr; } }
+
+/* Couverture */
+.pub-cover {
+  margin-top: 14px; border: 2px dashed rgba(14,14,16,.2); border-radius: var(--r-md);
+  aspect-ratio: 4/5; max-height: 300px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; overflow: hidden; transition: border-color var(--t-fast), background var(--t-fast);
+}
+.pub-cover:hover, .pub-cover:focus-visible { border-color: var(--red); background: rgba(155,28,40,.04); }
+.pub-cover.has { border-style: solid; border-color: rgba(14,14,16,.08); }
+.pub-cover img { width: 100%; height: 100%; object-fit: cover; }
+.pc-empty { text-align: center; color: var(--gray); font-weight: 600; font-size: .95rem; line-height: 1.5; }
+.pc-empty small { display: block; font-weight: 400; font-size: .8rem; margin-top: 4px; }
+.pc-empty.small { font-size: 1.6rem; }
+
+/* Autorisations */
+.perm-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 14px;
+  padding: 16px 0; border-bottom: 1px solid rgba(14,14,16,.07);
+}
+.perm-row:first-of-type { margin-top: 10px; }
+.price-fields { display: flex; gap: 8px; margin: 12px 0 4px; animation: ob-in 250ms var(--cf-ease); }
+.price-fields input { flex: 1; min-width: 0; border: 1.5px solid rgba(14,14,16,.14); border-radius: var(--r-sm); padding: 10px 12px; background: var(--card); }
+.price-fields select { border: 1.5px solid rgba(14,14,16,.14); border-radius: var(--r-sm); padding: 10px 8px; background: var(--card); }
+.price-fields input:focus, .price-fields select:focus { outline: none; border-color: var(--red); }
+
+/* Hashtags */
+.pub-label { display: block; font-size: .85rem; font-weight: 600; margin: 16px 0 8px; }
+.ht-box {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; border: 1.5px solid rgba(14,14,16,.14);
+  border-radius: var(--r-md); background: var(--card); min-height: 48px; align-items: center;
+}
+.ht-box:focus-within { border-color: var(--red); }
+.ht-box input { flex: 1; min-width: 120px; border: 0; background: none; padding: 6px; }
+.ht-box input:focus { outline: none; }
+.ht-box .tag-chip { background: rgba(155,28,40,.12); color: var(--red); }
+.ht-box .tag-chip button { margin-left: 4px; font-size: .75rem; }
+.ht-sugg { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; align-items: center; }
+
+/* Aperçu */
+.pub-preview { margin-top: 20px; }
+.pub-preview > span { font-weight: 600; font-size: .85rem; }
+.ev-card.mini { margin-top: 8px; height: 320px; display: flex; flex-direction: row; }
+.ev-card.mini .ev-media { flex: 0 0 42%; }
+.ev-card.mini .ev-body { flex: 1; }
+.pub-final-btns { display: flex; gap: 10px; margin-top: 18px; }
+.pub-final-btns .btn { flex: 1; font-size: .88rem; padding: 11px 8px; }
+
+/* Recadrage */
+.crop-zone {
+  position: relative; height: 340px; border-radius: var(--r-md); overflow: hidden; margin-top: 14px;
+  background: rgba(14,14,16,.05); touch-action: none; background-image: radial-gradient(rgba(14,14,16,.1) 1.2px, transparent 1.2px); background-size: 22px 22px;
+}
+.crop-zone img { position: absolute; top: 0; left: 0; cursor: grab; will-change: transform; user-select: none; -webkit-user-drag: none; }
+.crop-zone img:active { cursor: grabbing; }
+.crop-frame { position: absolute; inset: 0; pointer-events: none; box-shadow: 0 0 0 999px rgba(14,14,16,.18); border: 2px solid var(--bg); }
