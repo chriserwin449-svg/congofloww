@@ -100,8 +100,8 @@
     inset 0 2px 3px rgba(255,255,255,.22);
   transform: rotate(3deg);
   animation: phone-float 5.5s ease-in-out infinite;
-  /* peut être légèrement coupé en bas : effet de profondeur */
-  margin-bottom: clamp(-70px, -6vw, -30px);
+  /* marge basse quasi nulle : le téléphone reste entièrement visible */
+  margin-bottom: clamp(-16px, -1.5vw, -6px);
 }
 @keyframes phone-float { 0%,100% { translate: 0 0; rotate: 3deg; } 50% { translate: 0 -14px; rotate: 2deg; } }
 /* boutons latéraux métalliques */
@@ -253,45 +253,39 @@
 }
 .why-content { position: relative; max-width: 780px; margin: 0 auto; padding: 0 18px; }
 
-/* ——— 5 cartes superposées : deck collant qui se déplie au scroll ———
-   Pattern canonique : cartes sticky empilées (top décalé de 16px par rang),
-   enfants directs du conteneur, SANS marge. La piste fait une hauteur fixe
-   pour que chaque carte ait de l'espace de collage. Repliée (défaut), la
-   carte est remontée sur la pile (translateY négatif) + légère rotation ;
-   la classe .in (au scroll) l'ouvre à sa place → dépliage une à une ;
-   en remontant elles se replient. */
-.benefits-stack { --fan-y: 108px; --fan-r: 3.4deg; height: 1150px; }
+/* ——— 5 cartes superposées façon trackmoney : chaque carte glisse par-dessus
+   la précédente (sticky, top décalé de 14px par rang, fond opaque) pendant
+   que la suivante monte. Grand espacement vertical = longue course de
+   dépliage. La carte qui arrive a un léger fondu d'entrée (translateY 24px
+   → 0 + opacité) ; en remontant, tout se redéplie avec le scroll. */
+.benefits-stack { display: flex; flex-direction: column; gap: 130px; margin-top: 40px; margin-bottom: 60px; }
 .benefits-stack .benefit {
   position: sticky;
-  top: calc(84px + var(--i) * 16px);
-  /* repliée : remontée vers la carte du dessus + rotation éventail */
-  transform: translateY(calc(-1 * var(--i) * var(--fan-y))) rotate(calc((var(--i) - 1) * var(--fan-r)));
-  transform-origin: 50% 0%;
-  transition: transform 800ms var(--cf-ease);
-  box-shadow: 0 18px 44px rgba(14,14,16,.2), 0 4px 12px rgba(14,14,16,.1);
+  top: calc(84px + var(--i) * 14px);
   z-index: calc(var(--n) - var(--i));
+  /* entrée douce au premier affichage */
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 500ms var(--cf-ease), transform 500ms var(--cf-ease);
 }
-/* dépliée : la carte descend à sa place dans la pile */
-.benefits-stack .benefit.in { transform: none; }
-/* mobile : pile plus compacte */
+.benefits-stack .benefit.in { opacity: 1; transform: none; }
+/* mobile : course plus courte */
 @media (max-width: 640px) {
-  .benefits-stack { --fan-y: 72px; --fan-r: 4deg; height: 900px; }
-  .benefits-stack .benefit { top: calc(72px + var(--i) * 12px); }
+  .benefits-stack { gap: 96px; }
 }
-/* mouvement réduit : empilement simple, défilement normal */
+/* mouvement réduit : pas de fondu, empilement conservé */
 @media (prefers-reduced-motion: reduce) {
-  .benefits-stack { height: auto; }
-  .benefits-stack .benefit { position: static; transform: none !important; }
+  .benefits-stack .benefit { opacity: 1; transform: none; transition: none; }
 }
 .benefit {
-  display: flex; gap: 16px; padding: 20px 20px; align-items: flex-start;
-  background: rgba(255,253,249,.93); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(14,14,16,.08);
+  display: flex; gap: 16px; padding: 24px 22px; align-items: flex-start;
+  background: var(--card);
+  border: 1px solid rgba(14,14,16,.1);
+  box-shadow: 0 14px 40px rgba(14,14,16,.16);
 }
 .benefit-num {
   font-family: var(--serif); font-style: italic; font-size: 1.5rem; color: var(--red); flex-shrink: 0;
   width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid rgba(155,28,40,.3);
-  display: flex; align-items: center; justify-content: center; background: var(--card);
+  display: flex; align-items: center; justify-content: center; background: var(--bg);
 }
 .benefit .t-body { margin-top: 4px; font-size: .95rem; }
 

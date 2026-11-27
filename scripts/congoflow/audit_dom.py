@@ -64,8 +64,13 @@ with sync_playwright() as p:
 
         # ——— Landing ———
         check(f'{vname} landing: pas de débordement H', lambda: no_hoverflow(page))
+        # deck « Pourquoi » : cartes en fondu d'entrée → scroller pour les déclencher
+        page.evaluate("document.querySelector('#features').scrollIntoView()")
+        page.wait_for_timeout(900)
         for sel in ['.lnav', '#hero .t-display', '.hero-phone', '.hero-ctas .btn-primary', '#manifesto', '#features .benefit:nth-child(1)']:
             check(f'{vname} landing visible {sel}', lambda s=sel: visible(page, s))
+        page.evaluate('scrollTo(0, 0)')
+        page.wait_for_timeout(400)
         check(f'{vname} largeur téléphone', lambda: js(page, """(() => {
           const ph = document.querySelector('.hero-phone'); if (!ph) return 'MISSING';
           const ratio = ph.getBoundingClientRect().width / window.innerWidth;
@@ -99,8 +104,11 @@ with sync_playwright() as p:
         except Exception:
             ok(f'{vname} tutoriel non affiché (déjà vu)')
         check(f'{vname} fil: pas de débordement', lambda: no_hoverflow(page))
-        for sel in ['.app-dock', '.app-dock .dock-add', '.feed-actions', '#cardStack .ev-poster', '.evp-rail .rail-btn', '.cat-row .cat-pill', '#feedTabs']:
+        for sel in ['.app-dock', '.app-dock .dock-add', '.feed-actions', '#cardStack .ev-poster', '#feedTabs']:
             check(f'{vname} fil visible {sel}', lambda s=sel: visible(page, s))
+        # v1.4 : rail d'actions et filtres rapides retirés de l'image à la demande
+        check(f'{vname} rail absent (v1.4)', lambda: js(page, "!document.querySelector('.evp-rail') ? true : 'rail encore présent'"))
+        check(f'{vname} cat-row absent (v1.4)', lambda: js(page, "!document.querySelector('.cat-row') ? true : 'cat-row encore présent'"))
         check(f'{vname} dock: 5 cellules', lambda: js(page, "document.querySelectorAll('.app-dock .dock-cell').length === 5 ? true : 'n=' + document.querySelectorAll('.app-dock .dock-cell').length"))
         check(f'{vname} boutons au-dessus du dock', lambda: js(page, """(() => {
           const fa = document.querySelector('.feed-actions'); const dock = document.querySelector('.app-dock');
@@ -112,12 +120,7 @@ with sync_playwright() as p:
           const r = c.getBoundingClientRect();
           return (r.bottom <= window.innerHeight - 50) ? true : 'bottom=' + Math.round(r.bottom) + ' vh=' + window.innerHeight;
         })()"""))
-        check(f'{vname} rail dans la carte', lambda: js(page, """(() => {
-          const rail = document.querySelector('.evp-rail'); const card = document.querySelector('#cardStack .ev-poster');
-          if (!rail || !card) return 'MISSING';
-          const rr = rail.getBoundingClientRect(), cr = card.getBoundingClientRect();
-          return (rr.right <= cr.right + 2) ? true : 'rail dépasse';
-        })()"""))
+        check(f'{vname} tampons swipe absents (v1.4)', lambda: js(page, "!document.querySelector('#stampLike') && !document.querySelector('#stampPass') ? true : 'tampons encore présents'"))
         check(f'{vname} salutation personnalisée', lambda: js(page, """(() => {
           const g = document.querySelector('#feedGreet'); if (!g) return 'MISSING';
           return g.textContent.trim().length > 3 ? true : 'vide';

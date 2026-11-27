@@ -183,14 +183,14 @@
   transform: scale(calc(1 - (var(--z) - 1) * .05)) translateY(calc((var(--z) - 1) * 10px));
   opacity: calc(1 - (var(--z) - 1) * .28);
 }
-.sw-preview { height: 100%; border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--sh-2); background: var(--card); }
+.sw-preview { height: 100%; border-radius: var(--r-lg); overflow: hidden; background: var(--card); }
 .sw-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-lg); }
 
 /* ——— Carte-affiche 4:5 ——— */
 .ev-poster {
   position: relative; height: 100%; aspect-ratio: auto;
   border-radius: var(--r-lg); overflow: visible;
-  box-shadow: var(--sh-3); user-select: none;
+  user-select: none;
 }
 .evp-img-wrap { position: relative; height: 100%; border-radius: var(--r-lg); overflow: hidden; background: var(--card); }
 .evp-img-wrap img { width: 100%; height: 100%; object-fit: cover; }

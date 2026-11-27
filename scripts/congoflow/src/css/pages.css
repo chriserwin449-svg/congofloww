@@ -71,7 +71,9 @@
   width: 58px; height: 58px; border-radius: 50%; margin-top: -61px; position: relative;
   border: 3px solid var(--bg); background: var(--card); color: var(--red);
   display: flex; align-items: center; justify-content: center;
+  padding: 0; /* le + est centré par flex, pas de décalage */
 }
+.story-bubble .sb-plus svg { display: block; margin: auto; }
 .sb-name { font-size: .68rem; color: var(--gray); font-weight: 600; max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Visionneuse de storie */
@@ -333,3 +335,12 @@
 .tg-cap { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; }
 .tg-cap strong { color: #fff; font-size: .8rem; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
 .tg-cap span { display: inline-flex; align-items: center; gap: 4px; color: rgba(255,255,255,.85); font-size: .66rem; font-weight: 600; }
+
+/* ——— Éditeur de profil : aperçu bannière ——— */
+.ep-cover-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.ep-cover {
+  width: 132px; height: 64px; border-radius: 12px; flex: 0 0 auto;
+  background: linear-gradient(140deg, #7A1520, var(--red) 45%, var(--bordeaux));
+  background-size: cover; background-position: center;
+  position: relative; overflow: hidden; border: 1px solid rgba(14,14,16,.12);
+}

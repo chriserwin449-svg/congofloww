@@ -214,8 +214,9 @@ export function renderActivity(root, nav, initialTab = 'notif') {
         </button>`;
       }).join('')}`;
     $('#storyMe').addEventListener('click', () => {
+      // clic direct sur le cercle : si on a des stories → viewer, sinon → composer tout de suite
       if (mine.length) openStoryViewer(mine.map(st => st.id), 0);
-      else createSheet('story');
+      else storyComposer();
     });
     root.querySelectorAll('[data-story]').forEach(b => b.addEventListener('click', () => {
       const id = b.dataset.story;
@@ -515,8 +516,8 @@ export function renderProfile(root, nav, userId) {
 
   root.innerHTML = `
   <div class="prof-page">
-    <!-- Bandeau de couverture -->
-    <div class="prof-cover">
+    <!-- Bandeau de couverture : image perso, couleur perso ou dégradé par défaut -->
+    <div class="prof-cover" style="${u.cover ? `background-image:url('${u.cover}');background-size:cover;background-position:center` : (u.coverColor ? `background:${u.coverColor}` : '')}">
       ${isMe ? `<button class="pc-set" id="pcSet" aria-label="${t('profile.settings')}" title="${t('profile.settings')}">${icon('settings', 20)}</button>` : ''}
       <div class="pc-wax"></div>
     </div>
@@ -656,7 +657,7 @@ export function renderProfile(root, nav, userId) {
   }
 
   // Actions du profil
-  $('#pcSet')?.addEventListener('click', () => settingsPage(root, nav));
+  $('#pcSet')?.addEventListener('click', () => nav('settings'));
   $('#pEdit')?.addEventListener('click', () => editProfileSheet(u, () => renderProfile(root, nav, userId)));
   $('#pShare')?.addEventListener('click', () => {
     navigator.clipboard?.writeText(location.origin + location.pathname + '#/u/' + u.id).catch(() => {});
@@ -717,7 +718,16 @@ export function renderProfile(root, nav, userId) {
 function editProfileSheet(me, onDone) {
   const close = sheet(`
     <h2 class="t-h3">${t('profile.editTitle')}</h2>
-    <div class="field mt-16"><label>${t('profile.photoLabel')}</label>
+    <div class="field mt-16"><label>${t('profile.coverLabel')}</label>
+      <div class="ep-cover-row">
+        <div class="ep-cover" id="epCover" style="${me.cover ? `background-image:url(${me.cover})` : ''}"><div class="pc-wax"></div></div>
+        <div class="flex gap-8 wrap">
+          <button class="btn btn-ghost btn-sm" id="epCoverImg">${t('profile.coverImage')}</button>
+          <button class="btn btn-ghost btn-sm" id="epCoverReset">${t('profile.coverReset')}</button>
+          <input type="color" id="epCoverColor" value="${me.coverColor || '#9B1C28'}" aria-label="${t('profile.coverLabel')}" style="width:44px;height:44px;border:0;background:none;border-radius:50%">
+        </div>
+      </div></div>
+    <div class="field"><label>${t('profile.photoLabel')}</label>
       <div class="flex gap-12 ai-c">
         <span class="prof-avatar" id="epAv" style="background:${me.color}">${me.name.split(' ').map(x => x[0]).slice(0, 2).join('')}</span>
         <button class="btn btn-ghost btn-sm" id="epPhoto">${t('profile.photoButton')}</button>
@@ -731,6 +741,22 @@ function editProfileSheet(me, onDone) {
   const epScope = () => [...document.querySelectorAll('.sheet-backdrop')].pop();
   const av = epScope().querySelector('#epAv');
   epScope().querySelector('#epColor').addEventListener('input', e => { av.style.background = e.target.value; });
+  // ——— Bannière : image, couleur unie ou retour au dégradé par défaut ———
+  const coverEl = epScope().querySelector('#epCover');
+  const applyCover = (style) => { coverEl.style.backgroundImage = style; };
+  epScope().querySelector('#epCoverImg').addEventListener('click', () => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*';
+    inp.addEventListener('change', () => {
+      const f = inp.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => { me.cover = rd.result; applyCover(`url(${rd.result})`); };
+      rd.readAsDataURL(f);
+    });
+    inp.click();
+  });
+  epScope().querySelector('#epCoverColor').addEventListener('input', e => { me.cover = ''; me.coverColor = e.target.value; applyCover('none'); coverEl.style.background = e.target.value; });
+  epScope().querySelector('#epCoverReset').addEventListener('click', () => { me.cover = ''; me.coverColor = ''; applyCover('none'); coverEl.style.background = ''; });
   epScope().querySelector('#epPhoto').addEventListener('click', () => {
     const inp = document.createElement('input');
     inp.type = 'file'; inp.accept = 'image/*';

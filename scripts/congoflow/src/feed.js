@@ -46,14 +46,7 @@ export function posterCardHTML(e, opts = {}) {
         </div>
       </div>
     </div>
-    <!-- Rail d'actions vertical (façon TikTok) -->
-    <div class="evp-rail" role="toolbar" aria-label="${t('common.appName')}">
-      <button class="rail-btn rail-like ${liked ? 'on' : ''}" data-act="like" aria-label="${t('feed.like')}" aria-pressed="${liked}">${icon('heart', 22)}${showCounts ? `<span>${(e.stats?.likes || 0).toLocaleString()}</span>` : ''}</button>
-      <button class="rail-btn" data-act="comment" aria-label="${t('feed.comment')}">${icon('comment', 22)}${showCounts ? `<span>${(e.stats?.comments || 0).toLocaleString()}</span>` : ''}</button>
-      <button class="rail-btn" data-act="share" aria-label="${t('feed.share')}">${icon('share', 21)}${showCounts ? `<span>${(e.stats?.shares || 0).toLocaleString()}</span>` : ''}</button>
-      <button class="rail-btn ${saved ? 'on' : ''}" data-act="save" aria-label="${t('feed.save')}" aria-pressed="${saved}">${icon('bookmark', 21)}${showCounts ? `<span>${(e.stats?.saves || 0).toLocaleString()}</span>` : ''}</button>
-      <button class="rail-btn rail-boost" data-act="boost" aria-label="${t('feed.boostHype')}">${icon('flame', 22)}${showCounts ? `<span>${(e.stats?.boosts || 0).toLocaleString()}</span>` : ''}</button>
-    </div>
+    <!-- Rail d'actions supprimé de l'image (les actions restent dans la fiche détaillée) -->
   </div>`;
 }
 
@@ -83,13 +76,12 @@ export function renderFeed(root, nav) {
     </div>
 
     <div class="feed-cols">
-      <!-- Colonne gauche (desktop) : ville + filtres + tendances -->
+      <!-- Colonne gauche (desktop) : filtres + tendances -->
       <aside class="fc-left" aria-label="${t('feed.filtersTitle')}">
         <div class="fc-card card">
           <div class="fc-city">
             ${icon('pin', 18)}
             <div><strong>${myCity}</strong><span class="t-small">${t('loc.yourCityHint')}</span></div>
-            <button class="btn btn-ghost btn-sm" id="fcChangeCity">${t('common.change')}</button>
           </div>
         </div>
         <div class="fc-card card">
@@ -112,13 +104,9 @@ export function renderFeed(root, nav) {
           <button data-tab="mycity" role="tab">${t('feed.tabMyCity')}</button>
           <button data-tab="hyped" role="tab">${t('feed.tabHyped')}</button>
         </div>
-        <div class="cat-row" id="catRow" aria-label="${t('feed.filtersTitle')}">
-          ${Object.entries(cats).map(([k, v]) => `<button class="cat-pill cat-${k} ${k === 'all' ? 'on' : ''}" data-cat="${k}" aria-pressed="${k === 'all'}">${icon(catIcons[k] || 'sparkle', 14)} ${v}</button>`).join('')}
-        </div>
         <div class="swipe-zone" id="swipeZone">
           <div class="ambient-glow" id="ambientGlow" aria-hidden="true"></div>
           <div class="card-stack" id="cardStack" aria-live="polite"></div>
-          <div class="stamps"><span class="stamp like" id="stampLike">${t('feed.likeShort')}</span><span class="stamp pass" id="stampPass">${t('feed.passShort')}</span></div>
         </div>
         <div class="feed-actions">
           <button class="fa fa-x" id="btnPass" aria-label="${t('feed.pass')}" title="${t('feed.pass')}">${icon('x', 24)}</button>
@@ -129,18 +117,6 @@ export function renderFeed(root, nav) {
         <p class="kbd-hint t-small">${t('feed.keyboardHint')}</p>
         <div class="feed-empty hidden" id="feedEmpty"></div>
       </div>
-
-      <!-- Colonne droite (desktop) : agenda + comptes à suivre -->
-      <aside class="fc-right">
-        <div class="fc-card card">
-          <h3 class="t-h3">${icon('calendar', 15)} ${t('feed.agendaTitle')}</h3>
-          <div id="fcAgenda"></div>
-        </div>
-        <div class="fc-card card">
-          <h3 class="t-h3">${t('feed.toFollowTitle')}</h3>
-          <div id="fcFollow"></div>
-        </div>
-      </aside>
     </div>
   </div>`;
 
@@ -160,7 +136,7 @@ export function renderFeed(root, nav) {
     refresh();
   }));
 
-  // Pastilles catégories (mobile + desktop)
+  // Pastilles catégories (panneau filtres desktop)
   const bindCats = (scope) => {
     scope.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => {
       category = b.dataset.cat;
@@ -171,7 +147,6 @@ export function renderFeed(root, nav) {
       refresh();
     }));
   };
-  bindCats($('#catRow'));
   bindCats($('#fcFilters'));
 
   // Colonne gauche : tendances SANS compteur
@@ -180,38 +155,6 @@ export function renderFeed(root, nav) {
     $('#fcTrends').innerHTML = tags.length
       ? tags.map(h => `<a href="#/tag/${h}" class="fc-trend">#${h}</a>`).join('')
       : `<p class="t-small">${t('search.noResultsHint')}</p>`;
-  }
-
-  // Colonne droite : agenda (3 prochains aimés) + suggestions
-  function renderAgenda() {
-    const upcoming = s.myLikes.map(ev).filter(Boolean)
-      .filter(e => new Date(e.date) > Date.now())
-      .sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 3);
-    $('#fcAgenda').innerHTML = upcoming.length ? upcoming.map(e => {
-      const d = new Date(e.date);
-      return `<button class="fc-agenda-item" data-open="${e.id}">
-        <span class="fa-date"><b>${d.getDate()}</b><span>${d.toLocaleDateString(s.lang === 'en' ? 'en-GB' : 'fr-FR', { month: 'short' }).replace('.', '')}</span></span>
-        <span class="fai-body"><strong>${tx(e.title)}</strong><span class="t-small">${icon('clock', 11)} ${fmtTime(e.date)} · ${e.city}</span></span>
-      </button>`;
-    }).join('') : `<p class="t-small">${t('feed.agendaEmpty')}</p>`;
-    $('#fcAgenda').querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => openDetail(b.dataset.open, nav)));
-  }
-  function renderFollow() {
-    const sug = suggestedUsersLocal(3);
-    $('#fcFollow').innerHTML = sug.map(u => `
-      <div class="fc-follow">
-        ${avatarHTML(u)}
-        <div class="fcf-body"><strong>${u.name}</strong><span class="t-small">${t('profile.followers')} ${(u.followers || 0).toLocaleString()}</span></div>
-        <button class="btn btn-primary btn-sm" data-follow="${u.id}">${t('common.follow')}</button>
-      </div>`).join('');
-    $('#fcFollow').querySelectorAll('[data-follow]').forEach(b => b.addEventListener('click', function () {
-      const id = this.dataset.follow;
-      s.follows = [...new Set([...(s.follows || []), id])];
-      const u = userById(id); u.followers = (u.followers || 0) + 1;
-      save();
-      toast(t('feed.followDone'), 'ok');
-      renderFollow();
-    }));
   }
 
   function trendingHashtagsLocal(n, city) {
@@ -223,12 +166,6 @@ export function renderFeed(root, nav) {
     const arr = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, n).map(x => x[0]);
     return arr;
   }
-  function suggestedUsersLocal(n) {
-    const pool = s.users.filter(u => !(s.follows || []).includes(u.id) && !s.blocked.includes(u.id));
-    return pool.sort((a, b) => ((b.city === myCity ? 1 : 0) - (a.city === myCity ? 1 : 0)) || b.followers - a.followers).slice(0, n);
-  }
-
-  $('#fcChangeCity').addEventListener('click', () => import0('city'));
 
   function renderStack() {
     if (idx >= queue.length) { showEmpty(); return; }
@@ -239,7 +176,6 @@ export function renderFeed(root, nav) {
         ${i === 0 ? posterCardHTML(e) : `<div class="sw-preview"><img src="${e.img.startsWith('data:') ? e.img : IMG('w-poster-' + e.img)}" alt="" loading="lazy"></div>`}
       </div>`).join('');
     bindSwipe(next[0]);
-    bindRail(next[0]);
     bumpStat(next[0].id, 'views');
     updateGlow(next[0]);
   }
@@ -250,8 +186,6 @@ export function renderFeed(root, nav) {
     glow.style.backgroundImage = `url(${cover})`;
     glow.classList.add('has');
   }
-
-  function import0() { /* réservé */ }
 
   function showEmpty() {
     stack.innerHTML = '';
@@ -283,35 +217,6 @@ export function renderFeed(root, nav) {
     $('#emptyTags').addEventListener('click', () => location.hash = '#/app/search');
   }
 
-  // ————— Rail d'actions (like, commenter, partager, enregistrer, booster) —————
-  function bindRail(e) {
-    const rail = stack.querySelector('.evp-rail');
-    if (!rail) return;
-    rail.addEventListener('click', (ev0) => {
-      const btn = ev0.target.closest('[data-act]');
-      if (!btn) return;
-      ev0.stopPropagation();
-      const act = btn.dataset.act;
-      if (act === 'like') {
-        const on = btn.classList.toggle('on');
-        btn.setAttribute('aria-pressed', on);
-        if (on) { like(e, false); btn.classList.add('heart-pop'); setTimeout(() => btn.classList.remove('heart-pop'), 500); }
-        else { s.myLikes = s.myLikes.filter(x => x !== e.id); bumpStat(e.id, 'likes', -1); save(); }
-      }
-      if (act === 'comment') { openDetail(e.id, nav); }
-      if (act === 'share') { shareSheet(e); }
-      if (act === 'save') {
-        s.mySaves = s.mySaves || [];
-        const on = btn.classList.toggle('on');
-        btn.setAttribute('aria-pressed', on);
-        if (on) { s.mySaves.push(e.id); bumpStat(e.id, 'saves'); } else { s.mySaves = s.mySaves.filter(x => x !== e.id); bumpStat(e.id, 'saves', -1); }
-        save();
-        toast(on ? t('feed.save') + ' ✓' : t('common.done'));
-      }
-      if (act === 'boost') { boostEvent(e, btn); }
-    });
-  }
-
   function boostEvent(e, btn) {
     const day = new Date().toISOString().slice(0, 10);
     if (todayBoosts().length >= 3) return toast(t('feed.boostLimitDay'), 'err');
@@ -334,8 +239,6 @@ export function renderFeed(root, nav) {
     const setT = () => {
       const rot = Math.max(-12, Math.min(12, dx / 18));
       el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
-      $('#stampLike').style.opacity = Math.max(0, Math.min(1, dx / TH));
-      $('#stampPass').style.opacity = Math.max(0, Math.min(1, -dx / TH));
       // éclat de couleur sur les bords de l'écran
       zone.style.setProperty('--edgeL', Math.max(0, Math.min(1, -dx / TH)));
       zone.style.setProperty('--edgeR', Math.max(0, Math.min(1, dx / TH)));
@@ -356,7 +259,6 @@ export function renderFeed(root, nav) {
       el.style.transition = 'transform 380ms cubic-bezier(.22,1,.36,1)';
       el.style.transform = '';
       setTimeout(() => { el.style.transition = ''; }, 400);
-      $('#stampLike').style.opacity = 0; $('#stampPass').style.opacity = 0;
       zone.classList.remove('edge'); zone.style.setProperty('--edgeL', 0); zone.style.setProperty('--edgeR', 0);
     };
 
@@ -459,8 +361,6 @@ export function renderFeed(root, nav) {
   }
 
   renderTrends();
-  renderAgenda();
-  renderFollow();
   refresh();
   return () => removeEventListener('keydown', onKey);
 }

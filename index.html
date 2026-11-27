@@ -541,8 +541,8 @@ button.tag-chip:active { transform: scale(.94); }
     inset 0 2px 3px rgba(255,255,255,.22);
   transform: rotate(3deg);
   animation: phone-float 5.5s ease-in-out infinite;
-  /* peut être légèrement coupé en bas : effet de profondeur */
-  margin-bottom: clamp(-70px, -6vw, -30px);
+  /* marge basse quasi nulle : le téléphone reste entièrement visible */
+  margin-bottom: clamp(-16px, -1.5vw, -6px);
 }
 @keyframes phone-float { 0%,100% { translate: 0 0; rotate: 3deg; } 50% { translate: 0 -14px; rotate: 2deg; } }
 /* boutons latéraux métalliques */
@@ -694,45 +694,39 @@ button.tag-chip:active { transform: scale(.94); }
 }
 .why-content { position: relative; max-width: 780px; margin: 0 auto; padding: 0 18px; }
 
-/* ——— 5 cartes superposées : deck collant qui se déplie au scroll ———
-   Pattern canonique : cartes sticky empilées (top décalé de 16px par rang),
-   enfants directs du conteneur, SANS marge. La piste fait une hauteur fixe
-   pour que chaque carte ait de l'espace de collage. Repliée (défaut), la
-   carte est remontée sur la pile (translateY négatif) + légère rotation ;
-   la classe .in (au scroll) l'ouvre à sa place → dépliage une à une ;
-   en remontant elles se replient. */
-.benefits-stack { --fan-y: 108px; --fan-r: 3.4deg; height: 1150px; }
+/* ——— 5 cartes superposées façon trackmoney : chaque carte glisse par-dessus
+   la précédente (sticky, top décalé de 14px par rang, fond opaque) pendant
+   que la suivante monte. Grand espacement vertical = longue course de
+   dépliage. La carte qui arrive a un léger fondu d'entrée (translateY 24px
+   → 0 + opacité) ; en remontant, tout se redéplie avec le scroll. */
+.benefits-stack { display: flex; flex-direction: column; gap: 130px; margin-top: 40px; margin-bottom: 60px; }
 .benefits-stack .benefit {
   position: sticky;
-  top: calc(84px + var(--i) * 16px);
-  /* repliée : remontée vers la carte du dessus + rotation éventail */
-  transform: translateY(calc(-1 * var(--i) * var(--fan-y))) rotate(calc((var(--i) - 1) * var(--fan-r)));
-  transform-origin: 50% 0%;
-  transition: transform 800ms var(--cf-ease);
-  box-shadow: 0 18px 44px rgba(14,14,16,.2), 0 4px 12px rgba(14,14,16,.1);
+  top: calc(84px + var(--i) * 14px);
   z-index: calc(var(--n) - var(--i));
+  /* entrée douce au premier affichage */
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 500ms var(--cf-ease), transform 500ms var(--cf-ease);
 }
-/* dépliée : la carte descend à sa place dans la pile */
-.benefits-stack .benefit.in { transform: none; }
-/* mobile : pile plus compacte */
+.benefits-stack .benefit.in { opacity: 1; transform: none; }
+/* mobile : course plus courte */
 @media (max-width: 640px) {
-  .benefits-stack { --fan-y: 72px; --fan-r: 4deg; height: 900px; }
-  .benefits-stack .benefit { top: calc(72px + var(--i) * 12px); }
+  .benefits-stack { gap: 96px; }
 }
-/* mouvement réduit : empilement simple, défilement normal */
+/* mouvement réduit : pas de fondu, empilement conservé */
 @media (prefers-reduced-motion: reduce) {
-  .benefits-stack { height: auto; }
-  .benefits-stack .benefit { position: static; transform: none !important; }
+  .benefits-stack .benefit { opacity: 1; transform: none; transition: none; }
 }
 .benefit {
-  display: flex; gap: 16px; padding: 20px 20px; align-items: flex-start;
-  background: rgba(255,253,249,.93); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  border: 1px solid rgba(14,14,16,.08);
+  display: flex; gap: 16px; padding: 24px 22px; align-items: flex-start;
+  background: var(--card);
+  border: 1px solid rgba(14,14,16,.1);
+  box-shadow: 0 14px 40px rgba(14,14,16,.16);
 }
 .benefit-num {
   font-family: var(--serif); font-style: italic; font-size: 1.5rem; color: var(--red); flex-shrink: 0;
   width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid rgba(155,28,40,.3);
-  display: flex; align-items: center; justify-content: center; background: var(--card);
+  display: flex; align-items: center; justify-content: center; background: var(--bg);
 }
 .benefit .t-body { margin-top: 4px; font-size: .95rem; }
 
@@ -1178,14 +1172,14 @@ button.tag-chip:active { transform: scale(.94); }
   transform: scale(calc(1 - (var(--z) - 1) * .05)) translateY(calc((var(--z) - 1) * 10px));
   opacity: calc(1 - (var(--z) - 1) * .28);
 }
-.sw-preview { height: 100%; border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--sh-2); background: var(--card); }
+.sw-preview { height: 100%; border-radius: var(--r-lg); overflow: hidden; background: var(--card); }
 .sw-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-lg); }
 
 /* ——— Carte-affiche 4:5 ——— */
 .ev-poster {
   position: relative; height: 100%; aspect-ratio: auto;
   border-radius: var(--r-lg); overflow: visible;
-  box-shadow: var(--sh-3); user-select: none;
+  user-select: none;
 }
 .evp-img-wrap { position: relative; height: 100%; border-radius: var(--r-lg); overflow: hidden; background: var(--card); }
 .evp-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
@@ -1541,7 +1535,9 @@ button.tag-chip:active { transform: scale(.94); }
   width: 58px; height: 58px; border-radius: 50%; margin-top: -61px; position: relative;
   border: 3px solid var(--bg); background: var(--card); color: var(--red);
   display: flex; align-items: center; justify-content: center;
+  padding: 0; /* le + est centré par flex, pas de décalage */
 }
+.story-bubble .sb-plus svg { display: block; margin: auto; }
 .sb-name { font-size: .68rem; color: var(--gray); font-weight: 600; max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Visionneuse de storie */
@@ -1803,6 +1799,15 @@ button.tag-chip:active { transform: scale(.94); }
 .tg-cap { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; }
 .tg-cap strong { color: #fff; font-size: .8rem; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
 .tg-cap span { display: inline-flex; align-items: center; gap: 4px; color: rgba(255,255,255,.85); font-size: .66rem; font-weight: 600; }
+
+/* ——— Éditeur de profil : aperçu bannière ——— */
+.ep-cover-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.ep-cover {
+  width: 132px; height: 64px; border-radius: 12px; flex: 0 0 auto;
+  background: linear-gradient(140deg, #7A1520, var(--red) 45%, var(--bordeaux));
+  background-size: cover; background-position: center;
+  position: relative; overflow: hidden; border: 1px solid rgba(14,14,16,.12);
+}
 
 /* ============================================================
    CongoFlow — App shell (en-tête, dock, états)
@@ -2472,6 +2477,9 @@ const I18N ={
     followers: 'abonnés',
     following: 'abonnements',
     editProfile: 'Modifier le profil',
+    coverLabel: 'Bannière du profil',
+    coverImage: 'Image',
+    coverReset: 'Défaut',
     shareProfile: 'Partager le profil',
     shareCopied: 'Lien de ton profil copié !',
     addPost: 'Ajouter mon premier post',
@@ -3156,6 +3164,9 @@ const I18N_EN ={
     followers: 'followers',
     following: 'following',
     editProfile: 'Edit profile',
+    coverLabel: 'Profile banner',
+    coverImage: 'Image',
+    coverReset: 'Default',
     shareProfile: 'Share profile',
     shareCopied: 'Profile link copied!',
     addPost: 'Add my first post',
@@ -3821,6 +3832,9 @@ const I18N_LN ={
     followers: 'ba-abonné',
     following: 'ba-abonnement',
     editProfile: 'Bombisá profil',
+    coverLabel: 'Bannière ya profil',
+    coverImage: 'Elilingi',
+    coverReset: 'Ya libela',
     shareProfile: 'Partagá profil',
     shareCopied: 'Lien ya profil na yo ekopiama !',
     addPost: 'Bakisa post ya liboso na ngai',
@@ -5128,34 +5142,10 @@ function renderLanding(root, opts = {}) {
   }), { threshold: .18, rootMargin: '0px 0px -40px 0px' });
   $$('.reveal, .stagger').forEach(el => ro.observe(el));
   const cleanupFns = [];
-  // Deck « Pourquoi » : chaque carte se déplie quand elle atteint SON point de
-  // collage dans la pile (mesure offsetTop, insensible au transform), et se
-  // replie quand on remonte avant ce point.
-  const deckCards = $$('.benefits-stack .benefit');
-  if (deckCards.length) {
-    const stack = deckCards[0].parentElement;
-    const stackTopDoc = () => stack.getBoundingClientRect().top + scrollY;
-    const thresholds = deckCards.map((c, i) => {
-      const step = innerWidth <= 640 ? 12 : 16;
-      const stickyTop = (innerWidth <= 640 ? 72 : 84) + i * step;
-      // déployée quand la carte est remontée à mi-course du point où la suivante
-      // la recouvre : seuil = scroll où le haut naturel de la carte est passé
-      // sous la ligne (stickyTop + 45% de l'écran) → dépliage échelonné.
-      return c.offsetTop + stackTopDoc() - stickyTop - innerHeight * .55;
-    });
-    const updateDeck = () => {
-      const y = scrollY;
-      deckCards.forEach((c, i) => c.classList.toggle('in', y >= thresholds[i]));
-    };
-    updateDeck();
-    let deckTick = false;
-    const deckOnScroll = () => {
-      if (deckTick) return; deckTick = true;
-      requestAnimationFrame(() => { updateDeck(); deckTick = false; });
-    };
-    addEventListener('scroll', deckOnScroll, { passive: true });
-    cleanupFns.push(() => removeEventListener('scroll', deckOnScroll));
-  }
+  // Deck « Pourquoi » (façon trackmoney) : cartes sticky qui glissent l'une sur
+  // l'autre au scroll ; seul le fondu d'entrée (translateY 24px + opacité) est
+  // piloté ici, l'empilement est 100% CSS sticky.
+  $$('.benefits-stack .benefit').forEach(card => ro.observe(card));
 
   // FAQ accordéon
   $$('.faq-q').forEach(btn => {
@@ -5704,14 +5694,7 @@ function posterCardHTML(e, opts = {}) {
         </div>
       </div>
     </div>
-    <!-- Rail d'actions vertical (façon TikTok) -->
-    <div class="evp-rail" role="toolbar" aria-label="${t('common.appName')}">
-      <button class="rail-btn rail-like ${liked ? 'on' : ''}" data-act="like" aria-label="${t('feed.like')}" aria-pressed="${liked}">${icon('heart', 22)}${showCounts ? `<span>${(e.stats?.likes || 0).toLocaleString()}</span>` : ''}</button>
-      <button class="rail-btn" data-act="comment" aria-label="${t('feed.comment')}">${icon('comment', 22)}${showCounts ? `<span>${(e.stats?.comments || 0).toLocaleString()}</span>` : ''}</button>
-      <button class="rail-btn" data-act="share" aria-label="${t('feed.share')}">${icon('share', 21)}${showCounts ? `<span>${(e.stats?.shares || 0).toLocaleString()}</span>` : ''}</button>
-      <button class="rail-btn ${saved ? 'on' : ''}" data-act="save" aria-label="${t('feed.save')}" aria-pressed="${saved}">${icon('bookmark', 21)}${showCounts ? `<span>${(e.stats?.saves || 0).toLocaleString()}</span>` : ''}</button>
-      <button class="rail-btn rail-boost" data-act="boost" aria-label="${t('feed.boostHype')}">${icon('flame', 22)}${showCounts ? `<span>${(e.stats?.boosts || 0).toLocaleString()}</span>` : ''}</button>
-    </div>
+    <!-- Rail d'actions supprimé de l'image (les actions restent dans la fiche détaillée) -->
   </div>`;
 }
 
@@ -5741,13 +5724,12 @@ function renderFeed(root, nav) {
     </div>
 
     <div class="feed-cols">
-      <!-- Colonne gauche (desktop) : ville + filtres + tendances -->
+      <!-- Colonne gauche (desktop) : filtres + tendances -->
       <aside class="fc-left" aria-label="${t('feed.filtersTitle')}">
         <div class="fc-card card">
           <div class="fc-city">
             ${icon('pin', 18)}
             <div><strong>${myCity}</strong><span class="t-small">${t('loc.yourCityHint')}</span></div>
-            <button class="btn btn-ghost btn-sm" id="fcChangeCity">${t('common.change')}</button>
           </div>
         </div>
         <div class="fc-card card">
@@ -5770,13 +5752,9 @@ function renderFeed(root, nav) {
           <button data-tab="mycity" role="tab">${t('feed.tabMyCity')}</button>
           <button data-tab="hyped" role="tab">${t('feed.tabHyped')}</button>
         </div>
-        <div class="cat-row" id="catRow" aria-label="${t('feed.filtersTitle')}">
-          ${Object.entries(cats).map(([k, v]) => `<button class="cat-pill cat-${k} ${k === 'all' ? 'on' : ''}" data-cat="${k}" aria-pressed="${k === 'all'}">${icon(catIcons[k] || 'sparkle', 14)} ${v}</button>`).join('')}
-        </div>
         <div class="swipe-zone" id="swipeZone">
           <div class="ambient-glow" id="ambientGlow" aria-hidden="true"></div>
           <div class="card-stack" id="cardStack" aria-live="polite"></div>
-          <div class="stamps"><span class="stamp like" id="stampLike">${t('feed.likeShort')}</span><span class="stamp pass" id="stampPass">${t('feed.passShort')}</span></div>
         </div>
         <div class="feed-actions">
           <button class="fa fa-x" id="btnPass" aria-label="${t('feed.pass')}" title="${t('feed.pass')}">${icon('x', 24)}</button>
@@ -5787,18 +5765,6 @@ function renderFeed(root, nav) {
         <p class="kbd-hint t-small">${t('feed.keyboardHint')}</p>
         <div class="feed-empty hidden" id="feedEmpty"></div>
       </div>
-
-      <!-- Colonne droite (desktop) : agenda + comptes à suivre -->
-      <aside class="fc-right">
-        <div class="fc-card card">
-          <h3 class="t-h3">${icon('calendar', 15)} ${t('feed.agendaTitle')}</h3>
-          <div id="fcAgenda"></div>
-        </div>
-        <div class="fc-card card">
-          <h3 class="t-h3">${t('feed.toFollowTitle')}</h3>
-          <div id="fcFollow"></div>
-        </div>
-      </aside>
     </div>
   </div>`;
 
@@ -5818,7 +5784,7 @@ function renderFeed(root, nav) {
     refresh();
   }));
 
-  // Pastilles catégories (mobile + desktop)
+  // Pastilles catégories (panneau filtres desktop)
   const bindCats = (scope) => {
     scope.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => {
       category = b.dataset.cat;
@@ -5829,7 +5795,6 @@ function renderFeed(root, nav) {
       refresh();
     }));
   };
-  bindCats($('#catRow'));
   bindCats($('#fcFilters'));
 
   // Colonne gauche : tendances SANS compteur
@@ -5838,38 +5803,6 @@ function renderFeed(root, nav) {
     $('#fcTrends').innerHTML = tags.length
       ? tags.map(h => `<a href="#/tag/${h}" class="fc-trend">#${h}</a>`).join('')
       : `<p class="t-small">${t('search.noResultsHint')}</p>`;
-  }
-
-  // Colonne droite : agenda (3 prochains aimés) + suggestions
-  function renderAgenda() {
-    const upcoming = s.myLikes.map(ev).filter(Boolean)
-      .filter(e => new Date(e.date) > Date.now())
-      .sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 3);
-    $('#fcAgenda').innerHTML = upcoming.length ? upcoming.map(e => {
-      const d = new Date(e.date);
-      return `<button class="fc-agenda-item" data-open="${e.id}">
-        <span class="fa-date"><b>${d.getDate()}</b><span>${d.toLocaleDateString(s.lang === 'en' ? 'en-GB' : 'fr-FR', { month: 'short' }).replace('.', '')}</span></span>
-        <span class="fai-body"><strong>${tx(e.title)}</strong><span class="t-small">${icon('clock', 11)} ${fmtTime(e.date)} · ${e.city}</span></span>
-      </button>`;
-    }).join('') : `<p class="t-small">${t('feed.agendaEmpty')}</p>`;
-    $('#fcAgenda').querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => openDetail(b.dataset.open, nav)));
-  }
-  function renderFollow() {
-    const sug = suggestedUsersLocal(3);
-    $('#fcFollow').innerHTML = sug.map(u => `
-      <div class="fc-follow">
-        ${avatarHTML(u)}
-        <div class="fcf-body"><strong>${u.name}</strong><span class="t-small">${t('profile.followers')} ${(u.followers || 0).toLocaleString()}</span></div>
-        <button class="btn btn-primary btn-sm" data-follow="${u.id}">${t('common.follow')}</button>
-      </div>`).join('');
-    $('#fcFollow').querySelectorAll('[data-follow]').forEach(b => b.addEventListener('click', function () {
-      const id = this.dataset.follow;
-      s.follows = [...new Set([...(s.follows || []), id])];
-      const u = userById(id); u.followers = (u.followers || 0) + 1;
-      save();
-      toast(t('feed.followDone'), 'ok');
-      renderFollow();
-    }));
   }
 
   function trendingHashtagsLocal(n, city) {
@@ -5881,12 +5814,6 @@ function renderFeed(root, nav) {
     const arr = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, n).map(x => x[0]);
     return arr;
   }
-  function suggestedUsersLocal(n) {
-    const pool = s.users.filter(u => !(s.follows || []).includes(u.id) && !s.blocked.includes(u.id));
-    return pool.sort((a, b) => ((b.city === myCity ? 1 : 0) - (a.city === myCity ? 1 : 0)) || b.followers - a.followers).slice(0, n);
-  }
-
-  $('#fcChangeCity').addEventListener('click', () => import0('city'));
 
   function renderStack() {
     if (idx >= queue.length) { showEmpty(); return; }
@@ -5897,7 +5824,6 @@ function renderFeed(root, nav) {
         ${i === 0 ? posterCardHTML(e) : `<div class="sw-preview"><img src="${e.img.startsWith('data:') ? e.img : IMG('w-poster-' + e.img)}" alt="" loading="lazy"></div>`}
       </div>`).join('');
     bindSwipe(next[0]);
-    bindRail(next[0]);
     bumpStat(next[0].id, 'views');
     updateGlow(next[0]);
   }
@@ -5908,8 +5834,6 @@ function renderFeed(root, nav) {
     glow.style.backgroundImage = `url(${cover})`;
     glow.classList.add('has');
   }
-
-  function import0() { /* réservé */ }
 
   function showEmpty() {
     stack.innerHTML = '';
@@ -5941,35 +5865,6 @@ function renderFeed(root, nav) {
     $('#emptyTags').addEventListener('click', () => location.hash = '#/app/search');
   }
 
-  // ————— Rail d'actions (like, commenter, partager, enregistrer, booster) —————
-  function bindRail(e) {
-    const rail = stack.querySelector('.evp-rail');
-    if (!rail) return;
-    rail.addEventListener('click', (ev0) => {
-      const btn = ev0.target.closest('[data-act]');
-      if (!btn) return;
-      ev0.stopPropagation();
-      const act = btn.dataset.act;
-      if (act === 'like') {
-        const on = btn.classList.toggle('on');
-        btn.setAttribute('aria-pressed', on);
-        if (on) { like(e, false); btn.classList.add('heart-pop'); setTimeout(() => btn.classList.remove('heart-pop'), 500); }
-        else { s.myLikes = s.myLikes.filter(x => x !== e.id); bumpStat(e.id, 'likes', -1); save(); }
-      }
-      if (act === 'comment') { openDetail(e.id, nav); }
-      if (act === 'share') { shareSheet(e); }
-      if (act === 'save') {
-        s.mySaves = s.mySaves || [];
-        const on = btn.classList.toggle('on');
-        btn.setAttribute('aria-pressed', on);
-        if (on) { s.mySaves.push(e.id); bumpStat(e.id, 'saves'); } else { s.mySaves = s.mySaves.filter(x => x !== e.id); bumpStat(e.id, 'saves', -1); }
-        save();
-        toast(on ? t('feed.save') + ' ✓' : t('common.done'));
-      }
-      if (act === 'boost') { boostEvent(e, btn); }
-    });
-  }
-
   function boostEvent(e, btn) {
     const day = new Date().toISOString().slice(0, 10);
     if (todayBoosts().length >= 3) return toast(t('feed.boostLimitDay'), 'err');
@@ -5992,8 +5887,6 @@ function renderFeed(root, nav) {
     const setT = () => {
       const rot = Math.max(-12, Math.min(12, dx / 18));
       el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
-      $('#stampLike').style.opacity = Math.max(0, Math.min(1, dx / TH));
-      $('#stampPass').style.opacity = Math.max(0, Math.min(1, -dx / TH));
       // éclat de couleur sur les bords de l'écran
       zone.style.setProperty('--edgeL', Math.max(0, Math.min(1, -dx / TH)));
       zone.style.setProperty('--edgeR', Math.max(0, Math.min(1, dx / TH)));
@@ -6014,7 +5907,6 @@ function renderFeed(root, nav) {
       el.style.transition = 'transform 380ms cubic-bezier(.22,1,.36,1)';
       el.style.transform = '';
       setTimeout(() => { el.style.transition = ''; }, 400);
-      $('#stampLike').style.opacity = 0; $('#stampPass').style.opacity = 0;
       zone.classList.remove('edge'); zone.style.setProperty('--edgeL', 0); zone.style.setProperty('--edgeR', 0);
     };
 
@@ -6117,8 +6009,6 @@ function renderFeed(root, nav) {
   }
 
   renderTrends();
-  renderAgenda();
-  renderFollow();
   refresh();
   return () => removeEventListener('keydown', onKey);
 }
@@ -6970,8 +6860,9 @@ function renderActivity(root, nav, initialTab = 'notif') {
         </button>`;
       }).join('')}`;
     $('#storyMe').addEventListener('click', () => {
+      // clic direct sur le cercle : si on a des stories → viewer, sinon → composer tout de suite
       if (mine.length) openStoryViewer(mine.map(st => st.id), 0);
-      else createSheet('story');
+      else storyComposer();
     });
     root.querySelectorAll('[data-story]').forEach(b => b.addEventListener('click', () => {
       const id = b.dataset.story;
@@ -7271,8 +7162,8 @@ function renderProfile(root, nav, userId) {
 
   root.innerHTML = `
   <div class="prof-page">
-    <!-- Bandeau de couverture -->
-    <div class="prof-cover">
+    <!-- Bandeau de couverture : image perso, couleur perso ou dégradé par défaut -->
+    <div class="prof-cover" style="${u.cover ? `background-image:url('${u.cover}');background-size:cover;background-position:center` : (u.coverColor ? `background:${u.coverColor}` : '')}">
       ${isMe ? `<button class="pc-set" id="pcSet" aria-label="${t('profile.settings')}" title="${t('profile.settings')}">${icon('settings', 20)}</button>` : ''}
       <div class="pc-wax"></div>
     </div>
@@ -7412,7 +7303,7 @@ function renderProfile(root, nav, userId) {
   }
 
   // Actions du profil
-  $('#pcSet')?.addEventListener('click', () => settingsPage(root, nav));
+  $('#pcSet')?.addEventListener('click', () => nav('settings'));
   $('#pEdit')?.addEventListener('click', () => editProfileSheet(u, () => renderProfile(root, nav, userId)));
   $('#pShare')?.addEventListener('click', () => {
     navigator.clipboard?.writeText(location.origin + location.pathname + '#/u/' + u.id).catch(() => {});
@@ -7473,7 +7364,16 @@ function renderProfile(root, nav, userId) {
 function editProfileSheet(me, onDone) {
   const close = sheet(`
     <h2 class="t-h3">${t('profile.editTitle')}</h2>
-    <div class="field mt-16"><label>${t('profile.photoLabel')}</label>
+    <div class="field mt-16"><label>${t('profile.coverLabel')}</label>
+      <div class="ep-cover-row">
+        <div class="ep-cover" id="epCover" style="${me.cover ? `background-image:url(${me.cover})` : ''}"><div class="pc-wax"></div></div>
+        <div class="flex gap-8 wrap">
+          <button class="btn btn-ghost btn-sm" id="epCoverImg">${t('profile.coverImage')}</button>
+          <button class="btn btn-ghost btn-sm" id="epCoverReset">${t('profile.coverReset')}</button>
+          <input type="color" id="epCoverColor" value="${me.coverColor || '#9B1C28'}" aria-label="${t('profile.coverLabel')}" style="width:44px;height:44px;border:0;background:none;border-radius:50%">
+        </div>
+      </div></div>
+    <div class="field"><label>${t('profile.photoLabel')}</label>
       <div class="flex gap-12 ai-c">
         <span class="prof-avatar" id="epAv" style="background:${me.color}">${me.name.split(' ').map(x => x[0]).slice(0, 2).join('')}</span>
         <button class="btn btn-ghost btn-sm" id="epPhoto">${t('profile.photoButton')}</button>
@@ -7487,6 +7387,22 @@ function editProfileSheet(me, onDone) {
   const epScope = () => [...document.querySelectorAll('.sheet-backdrop')].pop();
   const av = epScope().querySelector('#epAv');
   epScope().querySelector('#epColor').addEventListener('input', e => { av.style.background = e.target.value; });
+  // ——— Bannière : image, couleur unie ou retour au dégradé par défaut ———
+  const coverEl = epScope().querySelector('#epCover');
+  const applyCover = (style) => { coverEl.style.backgroundImage = style; };
+  epScope().querySelector('#epCoverImg').addEventListener('click', () => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*';
+    inp.addEventListener('change', () => {
+      const f = inp.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => { me.cover = rd.result; applyCover(`url(${rd.result})`); };
+      rd.readAsDataURL(f);
+    });
+    inp.click();
+  });
+  epScope().querySelector('#epCoverColor').addEventListener('input', e => { me.cover = ''; me.coverColor = e.target.value; applyCover('none'); coverEl.style.background = e.target.value; });
+  epScope().querySelector('#epCoverReset').addEventListener('click', () => { me.cover = ''; me.coverColor = ''; applyCover('none'); coverEl.style.background = ''; });
   epScope().querySelector('#epPhoto').addEventListener('click', () => {
     const inp = document.createElement('input');
     inp.type = 'file'; inp.accept = 'image/*';
@@ -8107,7 +8023,7 @@ const $app = () => document.getElementById('app');
 let cleanupFn = null;
 
 function nav(view, arg) {
-  const map = { feed: '#/app/feed', mine: '#/app/mine', publish: '#/app/publish', activity: '#/app/activity', profile: '#/app/profile', onboarding: '#/onboarding' };
+  const map = { feed: '#/app/feed', mine: '#/app/mine', publish: '#/app/publish', activity: '#/app/activity', profile: '#/app/profile', settings: '#/app/settings', onboarding: '#/onboarding' };
   if (view === 'activity' && arg === 'messages') { location.hash = '#/app/activity'; sessionStorage.setItem('cf_tab', 'msg'); }
   else if (view === 'publish' && arg) location.hash = '#/app/publish/' + arg;
   else location.hash = map[view] || '#/app/feed';
@@ -8182,6 +8098,7 @@ function router() {
       case 'publish': inner = () => renderPublish(main, nav, parts[1]); title = t('nav.publish'); break;
       case 'activity': inner = () => renderActivity(main, nav, sessionStorage.getItem('cf_tab') === 'msg' ? 'msg' : 'notif'); sessionStorage.removeItem('cf_tab'); break;
       case 'profile': inner = () => renderProfile(main, nav); title = t('nav.profile'); break;
+      case 'settings': inner = () => settingsPage(main, nav); title = t('settings.title'); break;
       case 'search': inner = () => renderSearch(main, nav); title = t('common.search'); break;
       case 'tag': inner = () => renderTag(main, nav, parts[1] || ''); break;
       case 'ev': inner = () => { renderEventPage(main, nav, parts[1] || ''); }; break;

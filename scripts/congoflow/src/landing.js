@@ -314,34 +314,10 @@ export function renderLanding(root, opts = {}) {
   }), { threshold: .18, rootMargin: '0px 0px -40px 0px' });
   $$('.reveal, .stagger').forEach(el => ro.observe(el));
   const cleanupFns = [];
-  // Deck « Pourquoi » : chaque carte se déplie quand elle atteint SON point de
-  // collage dans la pile (mesure offsetTop, insensible au transform), et se
-  // replie quand on remonte avant ce point.
-  const deckCards = $$('.benefits-stack .benefit');
-  if (deckCards.length) {
-    const stack = deckCards[0].parentElement;
-    const stackTopDoc = () => stack.getBoundingClientRect().top + scrollY;
-    const thresholds = deckCards.map((c, i) => {
-      const step = innerWidth <= 640 ? 12 : 16;
-      const stickyTop = (innerWidth <= 640 ? 72 : 84) + i * step;
-      // déployée quand la carte est remontée à mi-course du point où la suivante
-      // la recouvre : seuil = scroll où le haut naturel de la carte est passé
-      // sous la ligne (stickyTop + 45% de l'écran) → dépliage échelonné.
-      return c.offsetTop + stackTopDoc() - stickyTop - innerHeight * .55;
-    });
-    const updateDeck = () => {
-      const y = scrollY;
-      deckCards.forEach((c, i) => c.classList.toggle('in', y >= thresholds[i]));
-    };
-    updateDeck();
-    let deckTick = false;
-    const deckOnScroll = () => {
-      if (deckTick) return; deckTick = true;
-      requestAnimationFrame(() => { updateDeck(); deckTick = false; });
-    };
-    addEventListener('scroll', deckOnScroll, { passive: true });
-    cleanupFns.push(() => removeEventListener('scroll', deckOnScroll));
-  }
+  // Deck « Pourquoi » (façon trackmoney) : cartes sticky qui glissent l'une sur
+  // l'autre au scroll ; seul le fondu d'entrée (translateY 24px + opacité) est
+  // piloté ici, l'empilement est 100% CSS sticky.
+  $$('.benefits-stack .benefit').forEach(card => ro.observe(card));
 
   // FAQ accordéon
   $$('.faq-q').forEach(btn => {

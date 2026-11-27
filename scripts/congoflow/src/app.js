@@ -4,14 +4,14 @@ import { renderLanding, LOGO_RED, legalPage } from './landing.js';
 import { renderAuth, renderOnboarding } from './auth.js';
 import { renderFeed, renderEventPage, ILLU } from './feed.js';
 import { renderPublish } from './publish.js';
-import { renderMine, renderActivity, renderProfile, renderLangPicker, cityPickerSheet } from './pages.js';
+import { renderMine, renderActivity, renderProfile, renderLangPicker, cityPickerSheet, settingsPage } from './pages.js';
 import { renderSearch, renderTag } from './search.js';
 
 const $app = () => document.getElementById('app');
 let cleanupFn = null;
 
 function nav(view, arg) {
-  const map = { feed: '#/app/feed', mine: '#/app/mine', publish: '#/app/publish', activity: '#/app/activity', profile: '#/app/profile', onboarding: '#/onboarding' };
+  const map = { feed: '#/app/feed', mine: '#/app/mine', publish: '#/app/publish', activity: '#/app/activity', profile: '#/app/profile', settings: '#/app/settings', onboarding: '#/onboarding' };
   if (view === 'activity' && arg === 'messages') { location.hash = '#/app/activity'; sessionStorage.setItem('cf_tab', 'msg'); }
   else if (view === 'publish' && arg) location.hash = '#/app/publish/' + arg;
   else location.hash = map[view] || '#/app/feed';
@@ -86,6 +86,7 @@ export function router() {
       case 'publish': inner = () => renderPublish(main, nav, parts[1]); title = t('nav.publish'); break;
       case 'activity': inner = () => renderActivity(main, nav, sessionStorage.getItem('cf_tab') === 'msg' ? 'msg' : 'notif'); sessionStorage.removeItem('cf_tab'); break;
       case 'profile': inner = () => renderProfile(main, nav); title = t('nav.profile'); break;
+      case 'settings': inner = () => settingsPage(main, nav); title = t('settings.title'); break;
       case 'search': inner = () => renderSearch(main, nav); title = t('common.search'); break;
       case 'tag': inner = () => renderTag(main, nav, parts[1] || ''); break;
       case 'ev': inner = () => { renderEventPage(main, nav, parts[1] || ''); }; break;
