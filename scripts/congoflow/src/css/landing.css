@@ -59,7 +59,7 @@
 }
 
 /* ——— Hero ——— */
-.hero { padding: 118px 18px 40px; position: relative; }
+.hero { padding: 118px 18px 40px; position: relative; overflow: hidden; }
 .hero-inner { max-width: 1160px; margin: 0 auto; display: grid; gap: 40px; }
 .hero-copy { min-width: 0; }
 .hero-badge {
@@ -68,11 +68,14 @@
   border-radius: 999px; padding: 7px 14px; margin-bottom: 16px; letter-spacing: .1em;
 }
 .hero-sub { font-size: 1.05rem; margin-top: 16px; max-width: 480px; }
+/* Titre en 2 lignes : « Ta ville bouge. » puis « Suis le flow. » dessous */
+.hero-l1, .hero-l2 { display: block; }
+.hero-l2 { margin-top: .1em; }
 .hero-typeline { font-size: 1.02rem; margin-top: 12px; color: var(--ink); font-weight: 600; }
 .hero-typeline .tw-word { color: var(--red); font-size: 1.15em; }
 .hero-ctas { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
 .hero-note { margin-top: 14px; letter-spacing: .01em; }
-@media (min-width: 980px) {
+@media (min-width: 940px) {
   .hero { padding-top: 148px; }
   .hero-inner { grid-template-columns: 1.05fr .95fr; align-items: center; }
 }
@@ -201,7 +204,8 @@
 .hc3 { bottom: 6%; right: 8%; animation-delay: 1.5s; }
 @keyframes chip-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -9px; } }
 @media (max-width: 560px) {
-  .hero-phone { width: 83%; }
+  /* 73vw : la bounding box avec rotation (3°+animation ≤6°) reste < 90% du viewport */
+  .hero-phone { width: min(73vw, 272px); }
   .hc2 { left: -4px; }
   .hero-glow { width: 340px; height: 340px; }
 }
@@ -229,27 +233,56 @@
 .logo-word.cream { color: var(--bg); }
 .lnav-logo .logo-word { color: var(--bg); }
 
-/* ——— Pourquoi : collage compact en arrière-plan (100svh, parallaxe douce) ——— */
-.why { position: relative; padding: 80px 0 70px; overflow: hidden; isolation: isolate; }
-.why-collage { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
-.wc-img {
-  position: absolute; border-radius: var(--r-lg); overflow: hidden; background: rgba(14,14,16,.05);
-  box-shadow: var(--sh-1);
+/* ——— Pourquoi : bandeau défilant en arrière-plan (2 rangées, sens inverse) ———
+   NB : pas de overflow:hidden ici — il casserait le sticky des cartes (deck).
+   Le marquee est maîtrisé par les .mrow eux-mêmes (overflow:hidden). */
+.why { position: relative; padding: 80px 0 70px; isolation: isolate; }
+.marquee-band {
+  position: absolute; inset: 0; z-index: -1;
+  display: flex; flex-direction: column; justify-content: space-evenly; gap: 14px;
+  pointer-events: none;
 }
-.wc-img img { width: 100%; height: 100%; object-fit: cover; }
-/* grille 2×2 compacte, décalages très réduits et bornés par clamp() */
-.wc1 { top: 4%; left: -4%; width: 44%; aspect-ratio: 3/2; transform: translateY(clamp(0px, 1.5vh, 12px)); }
-.wc2 { top: 2%; right: -5%; width: 46%; aspect-ratio: 3/2; transform: translateY(clamp(0px, 1vh, 8px)); }
-.wc3 { bottom: 3%; left: -3%; width: 40%; aspect-ratio: 3/2; transform: translateY(clamp(-12px, -1vh, 0px)); }
-.wc4 { bottom: 5%; right: -4%; width: 42%; aspect-ratio: 3/2; transform: translateY(clamp(-8px, -.5vh, 0px)); }
+/* bornes verticales du bandeau : hauteur des rangées */
+.mrow { overflow: hidden; width: 100%; flex: 1 1 0; min-height: 0; max-height: 340px; }
+.mrow .mtrack { height: 100%; }
+.mrow .mtrack .mcell { height: 100%; width: auto; aspect-ratio: 3/2; }
 /* voile clair : le texte reste lisible par-dessus les images */
 .why::after {
   content: ''; position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(rgba(247,244,239,.9), rgba(247,244,239,.78) 45%, rgba(247,244,239,.92));
+  background: linear-gradient(rgba(247,244,239,.86), rgba(247,244,239,.7) 45%, rgba(247,244,239,.9));
 }
 .why-content { position: relative; max-width: 780px; margin: 0 auto; padding: 0 18px; }
-.benefits-row { display: grid; gap: 14px; margin-top: 34px; }
-@media (min-width: 940px) { .benefits-row { grid-template-columns: repeat(2, 1fr); } }
+
+/* ——— 5 cartes superposées : deck collant qui se déplie au scroll ———
+   Pattern canonique : cartes sticky empilées (top décalé de 16px par rang),
+   enfants directs du conteneur, SANS marge. La piste fait une hauteur fixe
+   pour que chaque carte ait de l'espace de collage. Repliée (défaut), la
+   carte est remontée sur la pile (translateY négatif) + légère rotation ;
+   la classe .in (au scroll) l'ouvre à sa place → dépliage une à une ;
+   en remontant elles se replient. */
+.benefits-stack { --fan-y: 108px; --fan-r: 3.4deg; height: 1150px; }
+.benefits-stack .benefit {
+  position: sticky;
+  top: calc(84px + var(--i) * 16px);
+  /* repliée : remontée vers la carte du dessus + rotation éventail */
+  transform: translateY(calc(-1 * var(--i) * var(--fan-y))) rotate(calc((var(--i) - 1) * var(--fan-r)));
+  transform-origin: 50% 0%;
+  transition: transform 800ms var(--cf-ease);
+  box-shadow: 0 18px 44px rgba(14,14,16,.2), 0 4px 12px rgba(14,14,16,.1);
+  z-index: calc(var(--n) - var(--i));
+}
+/* dépliée : la carte descend à sa place dans la pile */
+.benefits-stack .benefit.in { transform: none; }
+/* mobile : pile plus compacte */
+@media (max-width: 640px) {
+  .benefits-stack { --fan-y: 72px; --fan-r: 4deg; height: 900px; }
+  .benefits-stack .benefit { top: calc(72px + var(--i) * 12px); }
+}
+/* mouvement réduit : empilement simple, défilement normal */
+@media (prefers-reduced-motion: reduce) {
+  .benefits-stack { height: auto; }
+  .benefits-stack .benefit { position: static; transform: none !important; }
+}
 .benefit {
   display: flex; gap: 16px; padding: 20px 20px; align-items: flex-start;
   background: rgba(255,253,249,.93); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -262,12 +295,23 @@
 }
 .benefit .t-body { margin-top: 4px; font-size: .95rem; }
 
-/* rangées du bandeau (conservées pour compat) */
-.mrow { overflow: hidden; width: 100%; }
-.mtrack { display: flex; gap: 14px; width: max-content; will-change: transform; animation: m-scroll 46s linear infinite; }
-.mcell { flex: 0 0 auto; width: min(44vw, 420px); aspect-ratio: 3/2; border-radius: var(--r-lg); overflow: hidden; background: rgba(14,14,16,.05); }
+/* rangées du bandeau (fond plein écran) */
+.mtrack {
+  display: flex; gap: 14px; width: max-content; will-change: transform;
+  animation: m-scroll 46s linear infinite;
+}
+.mtrack.rev { animation-name: m-scroll-rev; animation-duration: 54s; }
+.mcell {
+  flex: 0 0 auto; width: min(44vw, 420px); aspect-ratio: 3/2; border-radius: var(--r-lg);
+  overflow: hidden; background: rgba(14,14,16,.05);
+}
 .mcell img { width: 100%; height: 100%; object-fit: cover; }
 @keyframes m-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes m-scroll-rev { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .mtrack, .mtrack.rev { animation: none !important; }
+  .mtrack.rev { transform: translateX(-50%); }
+}
 
 /* ——— FAQ ——— */
 .faq { padding: 40px 18px 70px; max-width: 760px; margin: 0 auto; }

@@ -25,6 +25,7 @@ tout est inline : images, polices, code).
 | 🔍 **Recherche 3 onglets** | Événements / Comptes / Hashtags, tendances sans compteurs, pages hashtag façon TikTok. |
 | 🌍 **Trilingue** | Français · English · Lingala (⚠︎ lingala à faire relire par un locuteur natif). |
 | 📱 **PWA** | Installable, événements aimés disponibles hors connexion. |
+| 🖼️ **Landing soignée** | Hero 2 lignes + téléphone animé à droite, bandeau d'images défilant (2 rangées, sens inverse), 5 cartes « Pourquoi » superposées qui se déplient au scroll et se replient en remontant, responsive mobile/tablette/desktop. |
 
 ## Structure du dépôt
 

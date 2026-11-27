@@ -71,7 +71,10 @@ export function renderLanding(root, opts = {}) {
       <div class="hero-inner">
         <div class="hero-copy">
           <p class="hero-badge mono-label reveal">${icon('sparkle', 14)} ${t('landing.heroBadge')}</p>
-          <h1 class="t-display reveal">${t('landing.heroTitleLead')} <span class="serif-accent">${t('landing.heroTitleAccent')}</span>${t('landing.heroTitleEnd')}</h1>
+          <h1 class="t-display reveal">
+            <span class="hero-l1">${t('landing.heroTitleTop')}</span>
+            <span class="hero-l2">${t('landing.heroTitleBottomLead')} <span class="serif-accent">${t('landing.heroTitleBottomAccent')}</span>.</span>
+          </h1>
           <p class="hero-sub t-body reveal">${t('landing.heroSubFull')}</p>
           <p class="hero-typeline reveal">
             <span>${t('landing.heroLine')}</span> <span class="tw-word serif-accent" id="twWord"></span><span class="typewriter-cursor" aria-hidden="true"></span> <span>${t('landing.heroLineEnd')}</span>
@@ -136,20 +139,18 @@ export function renderLanding(root, opts = {}) {
       </div>
     </section>
 
-    <!-- Pourquoi CongoFlow : collage compact en arrière-plan derrière les cases -->
+    <!-- Pourquoi CongoFlow : bandeau défilant en arrière-plan derrière les cartes -->
     <section class="why" id="features">
-      <div class="why-collage" aria-hidden="true">
-        <div class="wc-img wc1">${img('w-scene-crowd')}</div>
-        <div class="wc-img wc2">${img('w-scene-dancers')}</div>
-        <div class="wc-img wc3">${img('w-poster-rumba')}</div>
-        <div class="wc-img wc4">${img('w-scene-hall')}</div>
+      <div class="marquee-band" aria-hidden="true">
+        <div class="mrow mrow-top"><div class="mtrack">${marqueeImgs(0)}${marqueeImgs(0)}</div></div>
+        <div class="mrow mrow-bottom"><div class="mtrack rev">${marqueeImgs(4)}${marqueeImgs(4)}</div></div>
       </div>
       <div class="why-content">
         <h2 class="t-h2 reveal">${t('landing.whyTitleLead')} <span class="serif-accent">${t('landing.whyTitleAccent')}</span> ?</h2>
         <p class="t-body reveal">${t('landing.whySubtitle')}</p>
-        <div class="benefits benefits-row stagger" id="benefits">
+        <div class="benefits benefits-stack" id="benefits">
           ${benefits.map((b, i) => `
-          <article class="benefit card reveal">
+          <article class="benefit card" style="--i:${i};--n:${benefits.length}">
             <span class="benefit-num">${i + 1}</span>
             <div><h3 class="t-h3">${b.title}</h3><p class="t-body">${b.text}</p></div>
           </article>`).join('')}
@@ -312,6 +313,35 @@ export function renderLanding(root, opts = {}) {
     if (e.isIntersecting) { e.target.classList.add('in'); ro.unobserve(e.target); }
   }), { threshold: .18, rootMargin: '0px 0px -40px 0px' });
   $$('.reveal, .stagger').forEach(el => ro.observe(el));
+  const cleanupFns = [];
+  // Deck « Pourquoi » : chaque carte se déplie quand elle atteint SON point de
+  // collage dans la pile (mesure offsetTop, insensible au transform), et se
+  // replie quand on remonte avant ce point.
+  const deckCards = $$('.benefits-stack .benefit');
+  if (deckCards.length) {
+    const stack = deckCards[0].parentElement;
+    const stackTopDoc = () => stack.getBoundingClientRect().top + scrollY;
+    const thresholds = deckCards.map((c, i) => {
+      const step = innerWidth <= 640 ? 12 : 16;
+      const stickyTop = (innerWidth <= 640 ? 72 : 84) + i * step;
+      // déployée quand la carte est remontée à mi-course du point où la suivante
+      // la recouvre : seuil = scroll où le haut naturel de la carte est passé
+      // sous la ligne (stickyTop + 45% de l'écran) → dépliage échelonné.
+      return c.offsetTop + stackTopDoc() - stickyTop - innerHeight * .55;
+    });
+    const updateDeck = () => {
+      const y = scrollY;
+      deckCards.forEach((c, i) => c.classList.toggle('in', y >= thresholds[i]));
+    };
+    updateDeck();
+    let deckTick = false;
+    const deckOnScroll = () => {
+      if (deckTick) return; deckTick = true;
+      requestAnimationFrame(() => { updateDeck(); deckTick = false; });
+    };
+    addEventListener('scroll', deckOnScroll, { passive: true });
+    cleanupFns.push(() => removeEventListener('scroll', deckOnScroll));
+  }
 
   // FAQ accordéon
   $$('.faq-q').forEach(btn => {
@@ -363,8 +393,8 @@ export function renderLanding(root, opts = {}) {
   mountLang('#langFooter', true);
   document.addEventListener('click', () => { root.querySelectorAll('.lang-pop.show').forEach(p => { p.classList.remove('show'); p.parentElement.classList.remove('on'); }); }, { once: true });
 
-  // Nettoyage des timers si la page change
-  return () => { seqT.forEach(clearTimeout); };
+  // Nettoyage des timers et listeners si la page change
+  return () => { seqT.forEach(clearTimeout); cleanupFns.forEach(f => f()); };
 }
 
 export { legalPage };

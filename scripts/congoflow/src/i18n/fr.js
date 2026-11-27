@@ -66,9 +66,9 @@ export default {
     start: 'Démarrer maintenant',
     // Hero
     heroBadge: 'Le n°1 de l\u2019événementiel congolais',
-    heroTitleLead: 'Ta ville bouge. Suis le',
-    heroTitleAccent: 'flow',
-    heroTitleEnd: '.',
+    heroTitleTop: 'Ta ville bouge.',
+    heroTitleBottomLead: 'Suis le',
+    heroTitleBottomAccent: 'flow',
     heroSub: 'Suis le',
     heroSubFull: 'Swipe, aime et sors. CongoFlow rassemble les événements de ta ville au même endroit, et te laisse publier les tiens en quelques minutes.',
     heroLine: 'Trouve des',
