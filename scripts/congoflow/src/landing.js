@@ -1,5 +1,5 @@
 // CongoFlow — Landing page
-import { t, state, setLang, IMG } from './core.js';
+import { t, state, setLang, IMG, icon } from './core.js';
 
 // Logo officiel (uploadé) : emblème + libellé. Déclinaisons encre / blanc cassé.
 const logoHTML = (variant, h = 32) => `
@@ -21,15 +21,18 @@ function legalPage(kind) {
     <div class="card legal-card reveal in">
       <h1 class="t-h2">${t('landing.footerLinks.' + kind)}</h1>
       <p class="t-body mt-8">${t('landing.provisional')}</p>
-      <p class="t-small mt-16">CongoFlow — Kinshasa, RDC · ${new Date().getFullYear()}</p>
+      <p class="t-small mt-16">CongoFlow — RDC · ${new Date().getFullYear()}</p>
     </div>
   </div>`;
 }
 
+// Piliers : icônes SVG du jeu homogène (plus d'emoji)
+const PILLAR_ICONS = { 'Découvre': 'search', 'Publie': 'sparkle', 'Partage': 'share', 'Discover': 'search', 'Post': 'sparkle', 'Share': 'share', 'Monkása': 'search', 'Banda': 'sparkle', 'Partagá': 'share' };
+
 export function renderLanding(root, opts = {}) {
   const s = state();
   const words = t('landing.heroWords');
-  const posters = ['rumba', 'club', 'conf', 'foot', 'wax', 'gospel', 'gastro', 'roof'];
+  const posters = ['rumba', 'club', 'gospel', 'goma', 'wax', 'foot', 'gastro', 'lubi'];
   const faqs = t('landing.faqs');
   const benefits = t('landing.benefits');
   const pillars = t('landing.pillars');
@@ -67,35 +70,60 @@ export function renderLanding(root, opts = {}) {
     <section class="hero" id="hero">
       <div class="hero-inner">
         <div class="hero-copy">
-          <h1 class="t-display reveal">${t('landing.heroTitleLead')} <span class="serif-accent">${t('landing.heroTitleAccent')}</span></h1>
-          <p class="hero-sub t-body reveal">${t('landing.heroSubLead')}<br>
-            <span>${t('landing.heroSubPrefix')}</span> <span class="tw-word serif-accent" id="twWord"></span><span class="typewriter-cursor" aria-hidden="true"></span> <span>${t('landing.heroSubSuffix')}</span>
+          <p class="hero-badge mono-label reveal">${icon('sparkle', 14)} ${t('landing.heroBadge')}</p>
+          <h1 class="t-display reveal">${t('landing.heroTitleLead')} <span class="serif-accent">${t('landing.heroTitleAccent')}</span>${t('landing.heroTitleEnd')}</h1>
+          <p class="hero-sub t-body reveal">${t('landing.heroSubFull')}</p>
+          <p class="hero-typeline reveal">
+            <span>${t('landing.heroLine')}</span> <span class="tw-word serif-accent" id="twWord"></span><span class="typewriter-cursor" aria-hidden="true"></span> <span>${t('landing.heroLineEnd')}</span>
           </p>
-        <div class="hero-ctas reveal">
-          <a href="#/auth" class="btn btn-primary btn-lg btn-magnet">${t('landing.heroCta')}</a>
-          <a href="#features" class="btn btn-ghost btn-lg">${t('landing.features')}</a>
+          <div class="hero-ctas reveal">
+            <a href="#/auth" class="btn btn-primary btn-lg btn-magnet">${t('landing.heroCta')}</a>
+            <a href="#features" class="btn btn-ghost btn-lg">${t('landing.heroCta2')}</a>
+          </div>
+          <p class="hero-note t-small reveal">${t('landing.heroNote')}</p>
         </div>
-      </div>
 
         <div class="hero-phone-zone" aria-hidden="true">
           <div class="hero-glow"></div>
+          <!-- Téléphone réaliste : cadre métallique, îlot, boutons latéraux, vitre -->
           <div class="hero-phone" id="heroPhone">
-            <div class="phone-notch"></div>
+            <div class="hp-side hp-vol"></div>
+            <div class="hp-side hp-pwr"></div>
             <div class="phone-screen">
-              <div class="ph-status"><span>9:41</span><span>▲▲▲ ⚡</span></div>
-              <div class="ph-card-stack">
-                ${posters.slice(0, 5).map((p, i) => `<div class="ph-card ${i === 0 ? 'on' : ''}" data-i="${i}">${img('w-poster-' + p)}<div class="ph-card-cap"><span class="badge-hype">🔥 ${120 + i * 47}</span><strong>${t('landing.heroWords')[i % words.length]}</strong></div></div>`).join('')}
+              <div class="ph-island"><span class="ph-cam"></span></div>
+              <div class="ph-status"><span>9:41</span><span class="ph-sig">▲▲▲</span><span class="ph-batt"><i></i></span></div>
+              <div class="ph-app">
+                <div class="ph-head">
+                  <span class="ph-hello">${t('feed.greetAfternoon', { name: '' }).trim().replace(/,$/, '')}</span>
+                  <span class="ph-city">${icon('pin', 11)} Kinshasa</span>
+                </div>
+                <div class="ph-card-stack">
+                  ${posters.slice(0, 4).map((p, i) => `
+                  <div class="ph-card ${i === 0 ? 'on' : ''}" data-i="${i}">
+                    ${img('w-poster-' + p)}
+                    <div class="ph-card-shade"></div>
+                    <div class="ph-card-date"><b>28</b><span>NOV</span></div>
+                    <div class="ph-card-cap">
+                      <span class="badge-hype ph-bh">${icon('flame', 12)} ${t('common.hype')}</span>
+                      <strong>${t('landing.heroWords')[i % words.length]}</strong>
+                    </div>
+                  </div>`).join('')}
+                </div>
+                <div class="ph-actions">
+                  <button class="pha pha-x" tabindex="-1">${icon('x', 17)}</button>
+                  <button class="pha pha-undo" tabindex="-1">${icon('undo', 16)}</button>
+                  <button class="pha pha-flame" tabindex="-1">${icon('flame', 17)}</button>
+                  <button class="pha pha-heart" tabindex="-1">${icon('heart', 19)}</button>
+                </div>
+                <div class="ph-stamp" id="phStamp">${t('feed.likeShort')}</div>
+                <div class="ph-fly" id="phFly">${icon('heart', 13)} ${t('feed.addedToMine')}</div>
+                <div class="ph-homebar"></div>
               </div>
-              <div class="ph-actions">
-                <button class="pha pha-x" tabindex="-1" aria-hidden="true">✕</button>
-                <button class="pha pha-heart" tabindex="-1" aria-hidden="true">♥</button>
-              </div>
-              <div class="ph-fly" id="phFly"><span>♥</span> ${t('nav.mine')}</div>
-              <div class="ph-homebar"></div>
             </div>
           </div>
-          <div class="hero-chip hc1">🔥 ${t('common.hype')} +18%</div>
-          <div class="hero-chip hc2">♥ ${t('feed.like')}</div>
+          <div class="hero-chip hc1">${icon('flame', 14)} ${t('common.hype')} +18%</div>
+          <div class="hero-chip hc2">${icon('clock', 14)} ${t('common.tonight')}</div>
+          <div class="hero-chip hc3">${icon('bell', 14)} ${t('feed.tabNotifications')}</div>
         </div>
       </div>
     </section>
@@ -104,20 +132,22 @@ export function renderLanding(root, opts = {}) {
     <section class="manifesto" id="manifesto">
       <p class="manifesto-text" id="manifestoText">${t('landing.manifesto')}</p>
       <div class="pillars stagger" id="pillars">
-        ${pillars.map(p => `<div class="pillar card"><div class="pillar-ico">${{ 'Découvrir': '🧭', 'Publier': '📣', 'Partager': '✨', 'Discover': '🧭', 'Post': '📣', 'Share': '✨', 'Monk': '🧭', 'Banda': '📣' }[p.title] || '✨'}</div><h3 class="t-h3">${p.title}</h3><p class="t-body">${p.text}</p></div>`).join('')}
+        ${pillars.map(p => `<div class="pillar card"><div class="pillar-ico">${icon(PILLAR_ICONS[p.title] || 'sparkle', 22)}</div><h3 class="t-h3">${p.title}</h3><p class="t-body">${p.text}</p></div>`).join('')}
       </div>
     </section>
 
-    <!-- Pourquoi CongoFlow : images défilantes en ARRIÈRE-PLAN derrière les 4 cases -->
+    <!-- Pourquoi CongoFlow : collage compact en arrière-plan derrière les cases -->
     <section class="why" id="features">
-      <div class="marquee-band" aria-hidden="true">
-        <div class="mrow mrow-top"><div class="mtrack">${marqueeImgs(0)}${marqueeImgs(0)}</div></div>
-        <div class="mrow mrow-bottom"><div class="mtrack rev">${marqueeImgs(4)}${marqueeImgs(4)}</div></div>
+      <div class="why-collage" aria-hidden="true">
+        <div class="wc-img wc1">${img('w-scene-crowd')}</div>
+        <div class="wc-img wc2">${img('w-scene-dancers')}</div>
+        <div class="wc-img wc3">${img('w-poster-rumba')}</div>
+        <div class="wc-img wc4">${img('w-scene-hall')}</div>
       </div>
       <div class="why-content">
         <h2 class="t-h2 reveal">${t('landing.whyTitleLead')} <span class="serif-accent">${t('landing.whyTitleAccent')}</span> ?</h2>
         <p class="t-body reveal">${t('landing.whySubtitle')}</p>
-        <div class="benefits benefits-row" id="benefits">
+        <div class="benefits benefits-row stagger" id="benefits">
           ${benefits.map((b, i) => `
           <article class="benefit card reveal">
             <span class="benefit-num">${i + 1}</span>
@@ -144,9 +174,7 @@ export function renderLanding(root, opts = {}) {
     <!-- CTA finale -->
     <section class="cta-final reveal">
       <h2 class="t-display">${t('landing.ctaTitleLead')} <span class="serif-accent">${t('landing.ctaTitleAccent')}</span>${t('landing.ctaTitleEnd')}</h2>
-      <p class="t-body cta-sub">${t('landing.ctaSubtitle')}</p>
       <a href="#/auth" class="btn btn-primary btn-lg btn-magnet cta-btn">${t('landing.ctaButton')}</a>
-      <p class="cta-note t-small">${t('landing.ctaNote')}</p>
     </section>
 
     <!-- Footer -->
@@ -188,6 +216,7 @@ export function renderLanding(root, opts = {}) {
   // ————— Interactions —————
   const $ = (q) => root.querySelector(q);
   const $$ = (q) => [...root.querySelectorAll(q)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Nav : descend à l'arrivée avec léger rebond
   requestAnimationFrame(() => requestAnimationFrame(() => $('#lnav').classList.add('in')));
@@ -201,11 +230,12 @@ export function renderLanding(root, opts = {}) {
   });
   drawer.addEventListener('click', e => { if (e.target.closest('a')) { drawer.classList.remove('show'); burger.classList.remove('open'); } });
 
-  // Machine à écrire
+  // Machine à écrire (mots au pluriel dans toutes les langues)
   const tw = $('#twWord');
-  if (tw) {
+  if (tw && !reduce) {
     let wi = 0, ci = 0, del = false;
     (function tick() {
+      if (!root.isConnected) return;
       const w = words[wi % words.length];
       tw.textContent = w.slice(0, ci);
       if (!del && ci < w.length) { ci++; setTimeout(tick, 90); }
@@ -213,36 +243,54 @@ export function renderLanding(root, opts = {}) {
       else if (del && ci > 0) { ci--; setTimeout(tick, 45); }
       else { del = false; wi++; setTimeout(tick, 300); }
     })();
-  }
+  } else if (tw) { tw.textContent = words[0]; }
 
-  // Téléphone : rotation des affiches + petite démo swipe/cœur
-  const phCards = $$('.ph-card');
-  let pci = 0;
-  const rot = setInterval(() => {
-    const c = phCards[pci]; if (!c || !root.isConnected) { clearInterval(rot); return; }
-    c.classList.remove('on');
-    pci = (pci + 1) % phCards.length;
-    phCards[pci].classList.add('on');
-  }, 5500);
+  // ————— Téléphone : séquence en boucle façon klapads —————
+  // 1. l'app s'ouvre → 2. affiche visible 5-6 s → 3. carte glisse à droite + tampon J'AIME
+  // 4. cœur éclate + notification « Ajouté à Mes événements » → 5. carte suivante arrive
   const phone = $('#heroPhone');
-  let demoT = setTimeout(function demo() {
-    if (!root.isConnected || !phone) { clearTimeout(demoT); return; }
-    phone.classList.add('demo-swipe');
-    setTimeout(() => {
+  const phCards = $$('.ph-card');
+  let pci = 0, seqT = [];
+  const later = (fn, ms) => { if (!reduce) seqT.push(setTimeout(fn, ms)); };
+
+  if (phone && phCards.length && !reduce) {
+    (function sequence() {
       if (!root.isConnected) return;
-      $('#phFly')?.classList.add('go');
-      const h = phone.querySelector('.pha-heart');
-      h && h.classList.add('beat');
-    }, 1100);
-    setTimeout(() => {
-      if (!root.isConnected) return;
-      phone.classList.remove('demo-swipe');
-      $('#phFly')?.classList.remove('go');
-      const h = phone.querySelector('.pha-heart');
-      h && h.classList.remove('beat');
-    }, 3200);
-    demoT = setTimeout(demo, 11000);
-  }, 2600);
+      const cur = phCards[pci];
+      // 1) l'app s'ouvre (légère pulsation de l'écran)
+      phone.classList.add('app-open');
+      later(() => phone.classList.remove('app-open'), 700);
+      // 2) l'affiche reste visible…
+      later(() => {
+        if (!root.isConnected) return;
+        // 3) glisse à droite + tampon
+        phone.classList.add('demo-swipe');
+        const stamp = $('#phStamp');
+        if (stamp) { stamp.textContent = t('feed.likeShort'); stamp.classList.add('go'); }
+      }, 3400);
+      // 4) cœur éclate + notification
+      later(() => {
+        if (!root.isConnected) return;
+        const h = phone.querySelector('.pha-heart');
+        h && h.classList.add('beat');
+        $('#phFly')?.classList.add('go');
+      }, 4500);
+      later(() => {
+        if (!root.isConnected) return;
+        phone.classList.remove('demo-swipe');
+        const stamp = $('#phStamp');
+        if (stamp) stamp.classList.remove('go');
+        const h = phone.querySelector('.pha-heart');
+        h && h.classList.remove('beat');
+        $('#phFly')?.classList.remove('go');
+        // 5) carte suivante
+        phCards[pci].classList.remove('on');
+        pci = (pci + 1) % phCards.length;
+        phCards[pci].classList.add('on');
+        seqT.push(setTimeout(sequence, 900));
+      }, 6300);
+    })();
+  }
 
   // Manifeste : mot par mot au scroll
   const mt = $('#manifestoText');
@@ -250,15 +298,18 @@ export function renderLanding(root, opts = {}) {
     const wordsArr = mt.textContent.trim().split(/\s+/);
     mt.innerHTML = wordsArr.map(w => `<span class="mw">${w}</span>`).join(' ');
     const mws = $$('.mw');
-    const io = new IntersectionObserver(es => {
-      es.forEach(e => { if (e.isIntersecting) mws.forEach((w, i) => setTimeout(() => w.classList.add('lit'), i * 65)); });
-    }, { threshold: .4 });
-    io.observe(mt);
+    if (reduce) mws.forEach(w => w.classList.add('lit'));
+    else {
+      const io = new IntersectionObserver(es => {
+        es.forEach(e => { if (e.isIntersecting) mws.forEach((w, i) => setTimeout(() => w.classList.add('lit'), i * 65)); });
+      }, { threshold: .4 });
+      io.observe(mt);
+    }
   }
 
   // Reveal générique + stagger
   const ro = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('in'); if (e.target.id === 'pillars' || e.target.classList.contains('stagger')) e.target.classList.add('in'); ro.unobserve(e.target); }
+    if (e.isIntersecting) { e.target.classList.add('in'); ro.unobserve(e.target); }
   }), { threshold: .18, rootMargin: '0px 0px -40px 0px' });
   $$('.reveal, .stagger').forEach(el => ro.observe(el));
 
@@ -272,11 +323,7 @@ export function renderLanding(root, opts = {}) {
     });
   });
 
-  // Marquee : légère accélération au survol (desktop), pause si reduced motion
-  // (le défilement continu est en CSS @keyframes, GPU-friendly)
-
   // Boutons magnétiques (desktop)
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!reduce && matchMedia('(hover:hover)').matches) {
     $$('.btn-magnet').forEach(b => {
       b.addEventListener('mousemove', e => {
@@ -317,7 +364,7 @@ export function renderLanding(root, opts = {}) {
   document.addEventListener('click', () => { root.querySelectorAll('.lang-pop.show').forEach(p => { p.classList.remove('show'); p.parentElement.classList.remove('on'); }); }, { once: true });
 
   // Nettoyage des timers si la page change
-  return () => { clearInterval(rot); clearTimeout(demoT); };
+  return () => { seqT.forEach(clearTimeout); };
 }
 
 export { legalPage };

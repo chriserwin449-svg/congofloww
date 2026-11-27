@@ -1,9 +1,9 @@
 // CongoFlow — Publier : parcours en 4 étapes (+ édition / suppression)
-import { t, tx, state, save, ev, uid, hypeScore, hypeLevel, fmtPrice } from './core.js';
+import { t, tx, state, save, ev, uid, hypeScore, hypeLevel, fmtPrice, IMG, icon, CITIES } from './core.js';
 import { sheet } from './feed.js';
-import { demoHashtagPool } from './data/demo.js';
+import { demoHashtagPool, AREAS } from './data/demo.js';
 
-const CATS = () => Object.keys(t('feed.categories'));
+const CATS = () => Object.keys(t('feed.categories')).filter(c => c !== 'all');
 
 // data : brouillon courant (ou édition d'un post existant)
 export function renderPublish(root, nav, editId) {
@@ -13,15 +13,22 @@ export function renderPublish(root, nav, editId) {
     id: uid('mev'), img: '', category: 'party', price: { on: false, amount: '', cur: 'USD' },
     allowComments: true, showLikes: true, allowMessages: true,
     title: '', sub: '', desc: '', program: '', practical: '',
-    date: '', time: '', commune: 'Gombe', area: '', addr: '',
-    hashtags: [], status: 'draft', organizer: 'me',
+    date: '', time: '', city: s.user.city || 'Kinshasa', commune: (AREAS[s.user.city] || AREAS['Kinshasa'])[0], area: '', addr: '',
+    hashtags: [], status: 'draft', organizer: s.user.id,
   };
+  // édition : la date est stockée en ISO complet (« 2026-12-02T19:30 ») ;
+  // re-découper en date + heure pour les champs du formulaire
+  if (editing && data.date && String(data.date).includes('T')) {
+    const [dPart, tPart] = String(data.date).split('T');
+    data.date = dPart;
+    if (!data.time) data.time = (tPart || '').slice(0, 5);
+  }
   let step = 0;
 
   root.innerHTML = `
   <div class="pub-page">
     <div class="pub-head">
-      <button class="pub-close" id="pubClose" aria-label="${t('common.close')}">✕</button>
+      <button class="pub-close" id="pubClose" aria-label="${t('common.close')}">${icon('close', 18)}</button>
       <h1 class="pub-title">${editing ? t('publish.editTitle') : t('nav.publish')}</h1>
       <span class="pub-step t-small">${t('publish.step')} ${step + 1}/4</span>
     </div>
@@ -54,13 +61,15 @@ export function renderPublish(root, nav, editId) {
 
   // ————— Étape 1 : Identifier —————
   function renderS1() {
+    const communes = AREAS[data.city] || AREAS['Kinshasa'];
+    if (!communes.includes(data.commune)) data.commune = communes[0];
     card.innerHTML = `
       <h2 class="t-h2 pub-h">${t('publish.s1Title')}</h2>
       <div class="pub-cover ${data.img ? 'has' : ''}" id="pubCover" tabindex="0" role="button" aria-label="${t('publish.coverButton')}">
-        ${data.img ? `<img src="${data.img}" alt="">` : `<span class="pc-empty">🖼️<br>${t('publish.coverButton')}<small>${t('publish.coverHint')}</small></span>`}
+        ${data.img ? `<img src="${data.img}" alt="">` : `<span class="pc-empty">${icon('camera', 26)}<br>${t('publish.coverButton')}<small>${t('publish.coverHint')}</small></span>`}
       </div>
       <div class="field mt-16"><label for="p-title">${t('publish.title')} *</label>
-        <input id="p-title" value="${data.title.replace(/"/g, '&quot;')}" placeholder="${t('publish.titlePlaceholder')}"><p class="field-msg"></p></div>
+        <input id="p-title" value="${(data.title || '').replace(/"/g, '&quot;')}" placeholder="${t('publish.titlePlaceholder')}" maxlength="80"><p class="field-msg"></p></div>
       <div class="field"><label for="p-cat">${t('publish.category')}</label>
         <select id="p-cat">${CATS().map(c => `<option value="${c}" ${data.category === c ? 'selected' : ''}>${t('feed.categories')[c]}</option>`).join('')}</select></div>
       <div class="two-cols">
@@ -68,14 +77,22 @@ export function renderPublish(root, nav, editId) {
         <div class="field"><label for="p-time">${t('publish.time')} *</label><input id="p-time" type="time" value="${data.time}"><p class="field-msg"></p></div>
       </div>
       <div class="two-cols">
-        <div class="field"><label for="p-com">${t('publish.commune')}</label>
-          <select id="p-com">${(t('publish.communes')).map(c => `<option ${data.commune === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
-        <div class="field"><label for="p-area">${t('publish.neighborhood')} *</label><input id="p-area" value="${data.area}" placeholder="Bandal, Matonge…"><p class="field-msg"></p></div>
+        <div class="field"><label for="p-city">${t('publish.city')} *</label>
+          <select id="p-city">${CITIES.map(c => `<option ${c.name === data.city ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div>
+        <div class="field"><label for="p-com">${t('publish.commune')} *</label>
+          <select id="p-com">${communes.map(c => `<option ${data.commune === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
       </div>
-      <div class="field"><label for="p-addr">${t('publish.address')}</label><input id="p-addr" value="${data.addr}" placeholder="Avenue, lieu…"></div>`;
+      <div class="field"><label for="p-addr">${t('publish.address')}</label><input id="p-addr" value="${(data.addr || '').replace(/"/g, '&quot;')}" placeholder="${t('publish.address')}…"></div>`;
 
     bind('#p-title', 'title'); bind('#p-cat', 'category'); bind('#p-date', 'date'); bind('#p-time', 'time');
-    bind('#p-com', 'commune'); bind('#p-area', 'area'); bind('#p-addr', 'addr');
+    bind('#p-city', 'city'); bind('#p-com', 'commune'); bind('#p-addr', 'addr');
+    // le changement de ville met à jour les communes
+    card.querySelector('#p-city').addEventListener('change', (e) => {
+      data.city = e.target.value;
+      const cs = AREAS[data.city] || AREAS['Kinshasa'];
+      data.commune = cs[0];
+      card.querySelector('#p-com').innerHTML = cs.map(c => `<option>${c}</option>`).join('');
+    });
     card.querySelector('#pubCover').addEventListener('click', pickCover);
     card.querySelector('#pubCover').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickCover(); } });
   }
@@ -105,18 +122,15 @@ export function renderPublish(root, nav, editId) {
       <button class="btn btn-primary btn-block btn-lg mt-16" id="cropOk">${t('publish.cropApply')}</button>`);
     const zone = [...document.querySelectorAll('.sheet-backdrop')].pop().querySelector('#cropZone');
     const im = [...document.querySelectorAll('.sheet-backdrop')].pop().querySelector('#cropImg');
-    let sc = 1, ox = 0, oy = 0, drag = null;
+    let ox = 0, oy = 0, drag = null;
     im.onload = fit;
     function fit() {
       const zw = zone.clientWidth, zh = zone.clientHeight;
-      sc = Math.max(zw / im.naturalWidth, zh / im.naturalHeight) * (im.dataset.z || 1);
-      // baseline: cover
       const base = Math.max(zw / im.naturalWidth, zh / im.naturalHeight);
-      sc = base * parseFloat(im.dataset.z || 1);
+      const sc = base * parseFloat(im.dataset.z || 1);
       im.style.width = im.naturalWidth * sc + 'px';
       im.style.height = im.naturalHeight * sc + 'px';
-      clamp();
-      apply();
+      clamp(); apply();
     }
     function clamp() {
       const zw = zone.clientWidth, zh = zone.clientHeight;
@@ -127,14 +141,13 @@ export function renderPublish(root, nav, editId) {
     im.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, ox, oy }; im.setPointerCapture(e.pointerId); });
     im.addEventListener('pointermove', e => { if (!drag) return; ox = drag.ox + (e.clientX - drag.x); oy = drag.oy + (e.clientY - drag.y); clamp(); apply(); });
     im.addEventListener('pointerup', () => drag = null);
-    // molette / pincement simplifiés (zoom boutons)
     [...document.querySelectorAll('.sheet-backdrop')].pop().querySelector('#cropOk').addEventListener('click', () => {
       const zw = zone.clientWidth, zh = zone.clientHeight;
       const cv = document.createElement('canvas');
       cv.width = 750; cv.height = 937; // 4:5
       const cx = cv.getContext('2d');
       cx.fillStyle = '#0E0E10'; cx.fillRect(0, 0, 750, 937);
-      const k = 750 / zw; // zone → canvas
+      const k = 750 / zw;
       cx.drawImage(im, -ox * k, -oy * k, im.width * k, im.height * k);
       data.img = cv.toDataURL('image/jpeg', .82);
       close();
@@ -193,17 +206,16 @@ export function renderPublish(root, nav, editId) {
 
   // ————— Étape 4 : Finaliser —————
   function renderS4() {
-    const sugg = demoHashtagPool.filter(h => !data.hashtags.includes(h)).slice(0, 8);
     card.innerHTML = `
       <h2 class="t-h2 pub-h">${t('publish.s4Title')}</h2>
 
       <label class="pub-label">${t('publish.hashtags')} <span class="t-small">· ${t('publish.hashtagsCount', { n: data.hashtags.length })}</span></label>
       <div class="ht-box">
         ${data.hashtags.map(h => `<span class="tag-chip sel">#${h} <button data-rm="${h}" aria-label="✕ ${h}">✕</button></span>`).join('')}
-        <input id="p-ht" placeholder="${t('publish.hashtagsPlaceholder')}" ${data.hashtags.length >= 10 ? 'disabled' : ''}>
+        <input id="p-ht" placeholder="${t('publish.hashtagsPlaceholder')}" ${data.hashtags.length >= 10 ? 'disabled' : ''} autocomplete="off">
       </div>
-      <div class="ht-sugg"><span class="t-small">${t('publish.hashtagSuggestion')} :</span>
-        ${sugg.map(h => `<button class="tag-chip" data-add="${h}">#${h}</button>`).join('')}</div>
+      <!-- suggestions PENDANT la frappe, sans aucun chiffre -->
+      <div class="ht-sugg" id="htSugg"></div>
 
       <div class="field mt-16"><label for="p-sub">${t('publish.subtitleExtra')} (${t('common.optional')})</label>
         <input id="p-sub" value="${(data.sub || '').replace(/"/g, '&quot;')}" placeholder="${t('publish.subtitleExtraPlaceholder')}"></div>
@@ -220,13 +232,33 @@ export function renderPublish(root, nav, editId) {
 
     bind('#p-sub', 'sub');
     const htInput = card.querySelector('#p-ht');
+    const suggBox = card.querySelector('#htSugg');
+
+    // suggestions de hashtags à la frappe (sans compteur)
+    const renderSugg = () => {
+      const raw = (htInput.value || '').trim().replace(/^#/, '').toLowerCase();
+      if (!raw) {
+        const pool = demoHashtagPool.filter(h => !data.hashtags.includes(h)).slice(0, 6);
+        suggBox.innerHTML = `<span class="t-small">${t('publish.hashtagSuggestion')} :</span> ` + pool.map(h => `<button class="tag-chip" data-add="${h}">#${h}</button>`).join('');
+      } else {
+        const matches = [...new Set([...demoHashtagPool, ...allTags()])]
+          .filter(h => h.includes(raw) && !data.hashtags.includes(h)).slice(0, 6);
+        suggBox.innerHTML = matches.length
+          ? matches.map(h => `<button class="tag-chip" data-add="${h}">#${h}</button>`).join('')
+          : `<span class="t-small">${raw ? `#${raw} ↵` : ''}</span>`;
+      }
+      suggBox.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => { addHt(b.dataset.add); htInput.focus(); }));
+    };
+    const allTags = () => state().events.flatMap(e => e.hashtags || []);
     const addHt = (raw) => {
       const h = raw.trim().replace(/^#/, '').toLowerCase().replace(/[^a-z0-9_]/g, '');
       if (h && !data.hashtags.includes(h) && data.hashtags.length < 10) data.hashtags.push(h);
       renderS4();
       card.querySelector('#p-ht')?.focus();
     };
+    htInput?.addEventListener('input', renderSugg);
     htInput?.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addHt(htInput.value); } });
+    renderSugg();
     card.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => addHt(b.dataset.add)));
     card.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { data.hashtags = data.hashtags.filter(x => x !== b.dataset.rm); renderS4(); }));
 
@@ -241,14 +273,16 @@ export function renderPublish(root, nav, editId) {
 
   function miniPreview() {
     const me = s.user || { name: '?' };
+    const cats = t('feed.categories');
     return `
-      <div class="ev-media">${data.img ? `<img src="${data.img}" alt="">` : '<div class="pc-empty small">🖼️</div>'}</div>
+      <div class="ev-media">${data.img ? `<img src="${data.img}" alt="">` : `<div class="pc-empty small">${icon('camera', 20)}</div>`}</div>
       <div class="ev-body">
-        <div class="ev-top"><span class="badge-hype">🔥 ${hypeScore({ ...data, stats: { views: 0 }, date: data.date ? data.date + 'T' + (data.time || '18:00') : new Date().toISOString(), ts: Date.now() })}</span>
+        <div class="ev-top"><span class="badge-hype">${icon('flame', 12)} ${hypeScore({ ...data, stats: { views: 0 }, date: data.date ? data.date + 'T' + (data.time || '18:00') : new Date().toISOString(), ts: Date.now() })}</span>
         <span class="ev-price ${data.price.on ? '' : 'free'}">${data.price.on ? fmtPrice({ on: true, amount: data.price.amount || 0, cur: data.price.cur }) : t('common.free')}</span></div>
         <h3 class="ev-title">${data.title || t('publish.titlePlaceholder')}</h3>
         <div class="ev-meta"><span class="ev-org"><span class="ev-avatar" style="background:#9B1C28">${me.name.split(' ').map(x => x[0]).slice(0, 2).join('')}</span><span>${me.name}</span></span>
-        <span>📅 ${data.date || '—'} ${data.time || ''} · 📍 ${data.area || '—'}, ${data.commune}</span></div>
+        <span class="mi-meta">${icon('calendar', 12)} ${data.date || '—'} ${data.time || ''}</span>
+        <span class="mi-meta">${icon('pin', 12)} ${data.commune || '—'}, ${data.city || ''}</span></div>
         <div class="ev-tags">${data.hashtags.slice(0, 4).map(h => `<span class="tag-chip">#${h}</span>`).join('')}</div>
       </div>`;
   }
@@ -281,7 +315,7 @@ export function renderPublish(root, nav, editId) {
       if (!data.img) errs.push(['#pubCover', t('publish.needCover')]);
       if (!data.title.trim()) errs.push(['#p-title', t('publish.needTitle')]);
       if (!data.date || !data.time) errs.push([data.date ? '#p-time' : '#p-date', t('publish.needDate')]);
-      if (!data.area.trim()) errs.push(['#p-area', t('publish.needPlace')]);
+      if (!data.city || !data.commune) errs.push(['#p-city', t('publish.needPlace')]);
     }
     if (step === 1 && !data.desc.trim()) errs.push(['#p-desc', t('publish.needDescription')]);
     if (errs.length) {

@@ -2,7 +2,7 @@
    CongoFlow — Auth + onboarding
    ============================================================ */
 
-.auth-page { min-height: 100vh; display: grid; }
+.auth-page { min-height: 100vh; min-height: 100dvh; display: grid; }
 
 /* Bouton retour : haut gauche de la page */
 .auth-back {
@@ -44,11 +44,19 @@
   .av-slide img { width: 100%; height: 100%; object-fit: cover; }
   .av-slide::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(14,14,16,.25), rgba(14,14,16,.55)); }
   .av-msgs { display: none; }
-  .auth-panel { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; min-height: 100vh; padding: 70px 14px 22px; }
+  .auth-panel { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; min-height: 100vh; min-height: 100dvh; padding: 70px 12px calc(16px + env(safe-area-inset-bottom)); }
   .auth-card {
-    background: rgba(247,244,239,.9); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    /* hauteur maximale : la carte ne déborde JAMAIS de l'écran ;
+       le contenu défile À L'INTÉRIEUR, la page ne bouge pas */
+    max-height: calc(100dvh - 120px);
+    overflow-y: auto; overscroll-behavior: contain;
+    background: rgba(247,244,239,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     border-radius: var(--r-lg); padding: 22px 18px; box-shadow: var(--sh-3); border: 1px solid rgba(247,244,239,.5);
+    scrollbar-width: thin; scrollbar-color: rgba(14,14,16,.22) transparent;
   }
+  .auth-card::-webkit-scrollbar { width: 4px; }
+  .auth-card::-webkit-scrollbar-thumb { background: rgba(14,14,16,.18); border-radius: 2px; }
+  .auth-card::-webkit-scrollbar-track { background: transparent; }
   .auth-foot { text-align: center; margin-top: 14px; color: rgba(247,244,239,.85); }
 }
 
@@ -61,7 +69,6 @@
   .av-slide.on { opacity: 1; }
   .av-slide img { width: 100%; height: 100%; object-fit: cover; }
   .av-slide::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(14,14,16,.05), rgba(14,14,16,.45)); }
-  /* messages forts remontés (au lieu d'être collés en bas) */
   .av-msgs { position: absolute; left: 40px; right: 40px; top: 96px; z-index: 2; height: min(38vh, 340px); }
   .av-msg {
     position: absolute; top: 0; left: 0; color: #fff; font-family: var(--serif); font-size: clamp(1.9rem, 3.4vw, 3rem);
@@ -70,15 +77,21 @@
   }
   .av-msg.on { opacity: 1; transform: none; }
   .auth-panel { display: flex; align-items: center; justify-content: center; padding: 40px 28px; background: var(--bg); }
-  .auth-card { width: min(440px, 100%); background: var(--card); border-radius: var(--r-lg); padding: 34px 30px; box-shadow: var(--sh-2); border: 1px solid rgba(14,14,16,.05); max-height: 92vh; overflow-y: auto; }
+  .auth-card {
+    width: min(460px, 100%); background: var(--card); border-radius: var(--r-lg); padding: 34px 30px;
+    box-shadow: var(--sh-2); border: 1px solid rgba(14,14,16,.05);
+    max-height: min(92vh, 860px); overflow-y: auto; overscroll-behavior: contain;
+    scrollbar-width: thin; scrollbar-color: rgba(14,14,16,.22) transparent;
+  }
+  .auth-card::-webkit-scrollbar { width: 4px; }
+  .auth-card::-webkit-scrollbar-thumb { background: rgba(14,14,16,.18); border-radius: 2px; }
+  .auth-card::-webkit-scrollbar-track { background: transparent; }
   .auth-foot { display: none; }
 }
 
 .auth-title { font-size: 1.55rem; margin: 18px 0 6px; }
 
-/* Basculateur login/signup — la charnière reste DANS la pilule :
-   elle fait exactement la moitié moins une marge, et se translate
-   de sa propre largeur (jamais au-delà du bord droit). */
+/* Basculateur login/signup */
 .auth-mode { position: relative; display: flex; background: rgba(14,14,16,.06); border-radius: 999px; padding: 4px; }
 .am-btn { flex: 1 1 50%; min-width: 0; padding: 9px; border-radius: 999px; font-weight: 600; font-size: .92rem; color: var(--gray); position: relative; z-index: 1; transition: color var(--t-fast); white-space: nowrap; }
 .am-btn.on { color: var(--ink); }
@@ -101,7 +114,7 @@
 .link-btn:hover { text-decoration: underline; }
 .link-btn[disabled] { color: var(--gray); pointer-events: none; }
 
-/* Note CGV sous le bouton (remplace la case à cocher) */
+/* Note CGV sous le bouton */
 .terms-note { text-align: center; margin-top: 12px; line-height: 1.5; color: var(--gray); }
 .terms-note a { color: var(--red); font-weight: 600; text-decoration: underline; }
 
@@ -111,6 +124,28 @@
 .phone-consent-row .terms { margin-top: 10px; }
 .terms { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; font-size: .86rem; color: var(--gray); }
 .terms input { margin-top: 3px; accent-color: var(--red); width: 17px; height: 17px; flex-shrink: 0; }
+
+/* Choix de la ville à l'inscription : pastilles */
+.city-pick { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 6px; }
+.city-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1.5px solid rgba(14,14,16,.14); border-radius: 999px; background: var(--card);
+  padding: 7px 13px; font-size: .84rem; font-weight: 600; color: var(--ink);
+  transition: all var(--t-fast) var(--cf-ease); cursor: pointer; list-style: none;
+}
+.city-chip:hover { border-color: rgba(155,28,40,.4); }
+.city-chip.sel { background: var(--red); border-color: var(--red); color: #fff; }
+.city-chip.sel svg { color: #fff; }
+.city-chip svg { color: var(--red); }
+.city-more { position: relative; }
+.city-more summary { display: inline-flex; }
+.city-more summary::-webkit-details-marker { display: none; }
+.city-more[open] .city-more-list {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
+  background: var(--card); border: 1px solid rgba(14,14,16,.1); border-radius: var(--r-md);
+  padding: 10px; margin-top: 8px; box-shadow: var(--sh-2); position: relative; z-index: 5;
+}
+.city-more-list .city-chip { justify-content: flex-start; }
 
 /* Séparateur + bouton Google */
 .auth-or { display: flex; align-items: center; gap: 12px; margin: 18px 0 14px; color: var(--gray); font-size: .8rem; }
@@ -127,7 +162,7 @@
 .slow-hint.show { opacity: 1; max-height: 40px; }
 
 /* ——— Onboarding ——— */
-.onboarding { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 70px 16px 30px; gap: 20px; }
+.onboarding { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 70px 16px calc(30px + env(safe-area-inset-bottom)); gap: 20px; }
 .ob-head { width: min(560px, 100%); display: flex; justify-content: space-between; align-items: center; }
 .ob-dots { display: flex; gap: 7px; }
 .ob-dots span { width: 26px; height: 6px; border-radius: 3px; background: rgba(14,14,16,.14); transition: background var(--t-med), width var(--t-med); }

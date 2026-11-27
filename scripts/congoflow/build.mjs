@@ -18,7 +18,7 @@ const files = ['core.js', 'landing.js', 'auth.js', 'feed.js', 'publish.js', 'pag
 const i18nRenames = { 'i18n/fr.js': 'const I18N =', 'i18n/en.js': 'const I18N_EN =', 'i18n/ln.js': 'const I18N_LN =' };
 
 let js = '';
-for (const f of ['i18n/fr.js', 'i18n/en.js', 'i18n/ln.js', 'data/demo.js']) {
+for (const f of ['i18n/fr.js', 'i18n/en.js', 'i18n/ln.js', 'data/cities.js', 'data/demo.js']) {
   let code = fs.readFileSync(path.join(SRC, f), 'utf8');
   code = code.replace(/^import\s+[^;]+;?\s*$/gm, '');
   code = code.replace(/^export\s+default\s+/m, i18nRenames[f] || 'const __x =');
@@ -81,15 +81,26 @@ if (fs.existsSync(p192)) icon192 = `data:image/png;base64,${b64(p192)}`;
 if (fs.existsSync(p512)) icon512 = `data:image/png;base64,${b64(p512)}`;
 
 // ————— 5. HTML final —————
+const iconData = icon192 || 'data:,';
 const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#9B1C28">
-<meta name="description" content="CongoFlow — Découvre, aime et publie des événements à Kinshasa. RDC.">
-<title>CongoFlow — Les événements près de chez toi</title>
-<link rel="icon" href="${icon192 || 'data:,'}">
+<meta name="description" content="CongoFlow — Ta ville bouge, suis le flow. Découvre, aime et publie les événements de Kinshasa, Lubumbashi, Goma, Boma et tout le Congo. Gratuit.">
+<meta name="keywords" content="événements Congo, Kinshasa, sorties, concerts, soirées, RDC, agenda">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CongoFlow">
+<meta property="og:title" content="CongoFlow — Ta ville bouge. Suis le flow.">
+<meta property="og:description" content="Swipe, aime et sors. Les événements de ta ville au même endroit, et publie les tiens en quelques minutes.">
+<meta property="og:image" content="${iconData}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CongoFlow — Ta ville bouge. Suis le flow.">
+<meta name="twitter:description" content="Les événements du Congo, au même endroit.">
+<title>CongoFlow — Ta ville bouge. Suis le flow.</title>
+<link rel="icon" href="${iconData}">
+<link rel="apple-touch-icon" href="${icon512 || iconData}">
 <style>
 ${fontCss}
 ${css}

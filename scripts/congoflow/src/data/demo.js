@@ -1,15 +1,36 @@
-// CongoFlow — Données de démonstration (RDC, Kinshasa)
-// Personnes fictives, lieux réels génériques de Kinshasa, dates relatives à la date du jour.
-// Les événements e1..e12 utilisent les affiches générées ; dates calculées par rapport à aujourd'hui.
+// CongoFlow — Données de démonstration (RDC, multi-villes)
+// Personnes fictives, lieux réels génériques, dates relatives à la date du jour.
+// Cohérence affiche ↔ événement : chaque affiste illustre sa catégorie, sa ville, son titre.
 
-export const COMMUNES = ['Gombe', 'Lingwala', 'Kalamu', 'Bandalungwa', 'Limete', 'Ngaliema', 'Kasa-Vubu', 'Lemba', 'Mont-Ngafula', 'Matete', 'Barumbu', 'Ngiri-Ngiri'];
+import { CITIES } from './cities.js';
+
+export { CITIES };
+
+// Communes / quartiers par ville (liste courte, extensible)
+export const AREAS = {
+  Kinshasa: ['Gombe', 'Lingwala', 'Kalamu', 'Bandalungwa', 'Limete', 'Ngaliema', 'Kasa-Vubu', 'Lemba', 'Matonge', 'Ngiri-Ngiri'],
+  Lubumbashi: ['Golf', 'Bel-Air', 'Kampemba', 'Ruashi', 'Kenya', 'Aviateurs'],
+  Boma: ['Centre', 'Nzadi', 'Kalamu', 'Sukisa'],
+  Matadi: ['Soyo', 'Nzanza', 'Mvuzi'],
+  Goma: ['Himbi', 'Les Volcans', 'Katindo', 'Mapendo', 'Ngangi-Mugunga'],
+  Bukavu: ['Ibanda', 'Bagira', 'Kadutu'],
+  Kisangani: ['Mangobo', 'Makiso', 'Tshopo'],
+  'Mbuji-Mayi': ['Diulu', 'Kabuya', 'Bipemba'],
+  Kolwezi: ['Dilala', 'Manika'],
+  Likasi: ['Shituru', 'Panda'],
+  Kananga: ['Kananga', 'Ndesha', 'Katoka'],
+  Mbandaka: ['Mbandaka', 'Wangata'],
+  Tshikapa: ['Dibumba', 'Luebo'],
+  Butembo: ['Kimemi', 'Bulengera'],
+  Uvira: ['Kalundu', 'Kavinvira'],
+};
 
 // offset en jours par rapport à aujourd'hui, heure de début
 export function demoEvents() {
   const d = (off, h, m = 0) => { const t = new Date(); t.setDate(t.getDate() + off); t.setHours(h, m, 0, 0); return t.toISOString(); };
   return [
     {
-      id: 'e1', img: 'rumba', category: 'concert', price: { on: true, amount: 15, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
+      id: 'e1', img: 'rumba', city: 'Kinshasa', category: 'concert', price: { on: true, amount: 15, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
       title: { fr: 'Rumba Nights — Grand concert en plein air', en: 'Rumba Nights — Big open-air concert', ln: 'Rumba Nights — Grand concert na libanda' },
       sub: { fr: 'Édition spéciale : hommage aux grands orchestres', en: 'Special edition: tribute to the great orchestras', ln: 'Édition spéciale : hommage aux grands orchestres' },
       desc: { fr: 'Une soirée dédiée à la rumba congolaise, avec deux orchestres sur scène et des invités surprises. Viens danser sous les étoiles au bord du fleuve. Buvette et grillades sur place.', en: 'An evening dedicated to Congolese rumba, with two orchestras on stage and surprise guests. Come dance under the stars by the river. Drinks and grills on site.', ln: 'Soirée moko ya rumba ya Congo, na orchestres mibale na scène mpe bopesi mpia ya nsango. Ya kwea na kala ya minzoto pembeni ya mai. Buvette mpe grillades ezali.' },
@@ -20,7 +41,7 @@ export function demoEvents() {
       stats: { views: 3200, likes: 410, comments: 87, shares: 64, saves: 130, boosts: 52 }, ts: d(-6, 12),
     },
     {
-      id: 'e2', img: 'club', category: 'party', price: { on: true, amount: 10, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: false,
+      id: 'e2', img: 'club', city: 'Kinshasa', category: 'party', price: { on: true, amount: 10, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: false,
       title: { fr: 'Afro Vibes — Soirée dansante', en: 'Afro Vibes — Dance night', ln: 'Afro Vibes — Soirée ya kala' },
       sub: { fr: 'DJs residents + invité de Brazzaville', en: 'Resident DJs + guest from Brazzaville', ln: 'DJs residents + mopya ya Brazzaville' },
       desc: { fr: 'La piste la plus chaude de la Gombe ce vendredi. Afrobeat, amapiano et un peu de ndombolo jusqu\u2019au petit matin.', en: 'The hottest floor in Gombe this Friday. Afrobeat, amapiano and a bit of ndombolo until the early morning.', ln: 'Piste ya moto mingi na Gombe vendredi oyo. Afrobeat, amapiano mpe ndombolo moke tika na tongo.' },
@@ -31,7 +52,7 @@ export function demoEvents() {
       stats: { views: 5100, likes: 620, comments: 103, shares: 140, saves: 98, boosts: 61 }, ts: d(-4, 10),
     },
     {
-      id: 'e3', img: 'conf', category: 'conference', price: { on: false, amount: 0, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
+      id: 'e3', img: 'conf', city: 'Kinshasa', category: 'conference', price: { on: false, amount: 0, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
       title: { fr: 'Kinshasa Tech Meetup — Jeunes entrepreneurs', en: 'Kinshasa Tech Meetup — Young entrepreneurs', ln: 'Kinshasa Tech Meetup — Baya ya mikolo' },
       sub: { fr: 'Comment lancer son activité avec peu de moyens', en: 'How to launch your business with little money', ln: 'Ndenge ya kobanda business na mbongo ya moke' },
       desc: { fr: 'Trois entrepreneurs kinois racontent leur parcours : premiers clients, erreurs à éviter, financement. Session de questions-réponses ouverte à tous.', en: 'Three Kinshasa entrepreneurs share their journey: first clients, mistakes to avoid, funding. Open Q&A session for everyone.', ln: 'Bayamotoro misato ya Kin balobaka nzela na bango : bakliya ya liboso, mabe ya kopekisa, mbongo. Mituna-na-bamakomi ya bobuki epai ya bato nyonso.' },
@@ -42,7 +63,7 @@ export function demoEvents() {
       stats: { views: 1800, likes: 210, comments: 45, shares: 52, saves: 160, boosts: 18 }, ts: d(-3, 9),
     },
     {
-      id: 'e4', img: 'foot', category: 'sport', price: { on: true, amount: 3, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: false,
+      id: 'e4', img: 'foot', city: 'Kinshasa', category: 'sport', price: { on: true, amount: 3, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: false,
       title: { fr: 'Tournoi de football des quartiers — Demi-finales', en: 'Neighborhood football tournament — Semi-finals', ln: 'Tournoi ya football ya quartier — Demi-finales' },
       sub: { fr: 'Bandal vs Kalamu, la revanche', en: 'Bandal vs Kalamu, the rematch', ln: 'Bandal na Kalamu, limpingi' },
       desc: { fr: 'Le tournoi qui chauffe les fins de semaine de Bandalungwa. Ambiance garantie, buvette et maboke pour tout le monde.', en: 'The tournament that heats up Bandalungwa weekends. Guaranteed atmosphere, drinks and grilled skewers for everyone.', ln: 'Tournoi oyo esalisaka moto ya weekend na Bandalungwa. Ambiance ya solo, buvette mpe maboke epai ya bato nyonso.' },
@@ -53,18 +74,18 @@ export function demoEvents() {
       stats: { views: 4400, likes: 380, comments: 120, shares: 85, saves: 210, boosts: 44 }, ts: d(-8, 16),
     },
     {
-      id: 'e5', img: 'wax', category: 'fair', price: { on: true, amount: 5, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
+      id: 'e5', img: 'wax', city: 'Kinshasa', category: 'fair', price: { on: true, amount: 5, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
       title: { fr: 'Foire du Pagne & de la Mode — Édition 4', en: 'Wax & Fashion Fair — 4th edition', ln: 'Foire ya Pagne & Mode — Édition 4' },
       sub: { fr: '30 créateurs, défilés et ateliers couture', en: '30 designers, runway shows and sewing workshops', ln: 'Bakrei 30, défilés mpe atelier ya couture' },
       desc: { fr: 'Le rendez-vous des créateurs de mode kinois. Pagne contemporain, accessoires, défilés chaque heure et ateliers pour apprendre à coudre.', en: 'The meeting point for Kinshasa fashion designers. Contemporary wax, accessories, hourly runway shows and sewing workshops.', ln: 'Esika ya bokutani ya bakrei ya mode ya Kin. Pagne ya sikoyo, accessoires, défilés na ngonga nyonso mpe atelier ya kosolola.' },
       program: { fr: '10h : ouverture · 12h : défilé 1 · 14h : atelier enfants · 16h : grand défilé · 19h : clôture', en: '10am: opening · 12pm: show 1 · 2pm: kids workshop · 4pm: grand show · 7pm: closing', ln: '10h : efungwami · 12h : défilé 1 · 14h : atelier bana · 16h : défilé ya ntina · 19h : botuli' },
-      practical: { fr: 'Paiement en USD et CDF accepté sur tous les stands.', en: 'USD and CFD payment accepted on all stands.', ln: 'Mbongo USD na CDF endimami na stand nyonso.' },
+      practical: { fr: 'Paiement en USD et CDF accepté sur tous les stands.', en: 'USD and CDF payment accepted on all stands.', ln: 'Mbongo USD na CDF endimami na stand nyonso.' },
       organizer: 'u6', date: d(9, 10), commune: 'Lingwala', area: 'Lingwala', addr: 'Halle de la Gare, boulevard du 30 Juin',
       hashtags: ['pagne', 'mode', 'wax', 'createurskin'],
       stats: { views: 2900, likes: 470, comments: 66, shares: 74, saves: 190, boosts: 37 }, ts: d(-5, 11),
     },
     {
-      id: 'e6', img: 'gospel', category: 'church', price: { on: false, amount: 0, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: false,
+      id: 'e6', img: 'gospel', city: 'Kinshasa', category: 'church', price: { on: false, amount: 0, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: false,
       title: { fr: 'Nuit de Louange — Chorale Unie de Kinshasa', en: 'Night of Praise — United Choir of Kinshasa', ln: 'Nuit ya Louange — Chorale Unie ya Kinshasa' },
       sub: { fr: 'Chorales de 12 communes réunies', en: 'Choirs from 12 communes together', ln: 'Bachorale ya commune 12 esangisami' },
       desc: { fr: 'Une nuit de chants et de louange avec les chorales de douze communes. Entrée libre, offrande libre.', en: 'A night of songs and praise with choirs from twelve communes. Free entry, free offering.', ln: 'Nuit moko ya nzembo na louange na bachorale ya commune zomi na mibale. Kokota ya boboto, offrande ya boboto.' },
@@ -75,7 +96,7 @@ export function demoEvents() {
       stats: { views: 2600, likes: 520, comments: 38, shares: 96, saves: 150, boosts: 29 }, ts: d(-2, 14),
     },
     {
-      id: 'e7', img: 'gastro', category: 'fair', price: { on: true, amount: 7, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
+      id: 'e7', img: 'gastro', city: 'Kinshasa', category: 'gastronomy', price: { on: true, amount: 7, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
       title: { fr: 'Kin Food Fest — Festival gastronomique', en: 'Kin Food Fest — Food festival', ln: 'Kin Food Fest — Festival ya bilei' },
       sub: { fr: 'Les saveurs des 26 provinces sur une terrasse', en: 'Flavors of the 26 provinces on one terrace', ln: 'Bilei ya province 26 na terrasse moko' },
       desc: { fr: 'Chope, pondu, mbenga, misangu… Vingt cuisiniers kinois se disputent le prix du meilleur plat. Dégustations à petits prix.', en: 'Chope, pondu, mbenga, misangu… Twenty Kinshasa cooks compete for the best dish award. Tastings at small prices.', ln: 'Chope, pondu, mbenga, misangu… Baklisti 20 ya Kin balinganaka na prix ya bilei ya malamu. Kolia na mbongo ya moke.' },
@@ -86,7 +107,7 @@ export function demoEvents() {
       stats: { views: 3900, likes: 530, comments: 92, shares: 118, saves: 240, boosts: 48 }, ts: d(-7, 12),
     },
     {
-      id: 'e8', img: 'roof', category: 'party', price: { on: true, amount: 20, cur: 'USD' }, allowComments: true, showLikes: false, allowMessages: true,
+      id: 'e8', img: 'roof', city: 'Kinshasa', category: 'party', price: { on: true, amount: 20, cur: 'USD' }, allowComments: true, showLikes: false, allowMessages: true,
       title: { fr: 'Sunset Rooftop — Anniversaire Kinshasa', en: 'Sunset Rooftop — Kinshasa Anniversary', ln: 'Sunset Rooftop — Anniversaire ya Kinshasa' },
       sub: { fr: 'Cocktail, vue sur le fleuve et DJ set', en: 'Cocktail, river view and DJ set', ln: 'Cocktail, vue ya mai mpe DJ set' },
       desc: { fr: 'Un anniversaire privé ouvert aux amis du flow : cocktails signature, coucher de soleil sur le fleuve et DJ set chill.', en: 'A private birthday opened to friends of the flow: signature cocktails, sunset over the river and a chill DJ set.', ln: 'Anniversaire ya mbala oyo efungwami epai ya baninga ya flow : cocktails, kokwea ya moi na mai mpe DJ set ya chill.' },
@@ -97,7 +118,7 @@ export function demoEvents() {
       stats: { views: 2100, likes: 290, comments: 41, shares: 48, saves: 87, boosts: 22 }, ts: d(-1, 15),
     },
     {
-      id: 'e9', img: 'club', category: 'concert', price: { on: true, amount: 12, cur: 'USD' }, allowComments: false, showLikes: true, allowMessages: false,
+      id: 'e9', img: 'club', city: 'Kinshasa', category: 'concert', price: { on: true, amount: 12, cur: 'USD' }, allowComments: false, showLikes: true, allowMessages: false,
       title: { fr: 'Live Jazz au Sous-Sol', en: 'Live Jazz at the Sous-Sol', ln: 'Live Jazz na Sous-Sol' },
       sub: { fr: 'Trio piano-contrebasse-batterie, session acoustique', en: 'Piano-bass-drums trio, acoustic session', ln: 'Trio piano-contrebasse-batterie, session ya acoustique' },
       desc: { fr: 'Le club le plus intime de la Gombe ouvre ses portes pour une session jazz acoustique. Capacité limitée, réservation conseillée.', en: 'The most intimate club in Gombe opens for an acoustic jazz session. Limited capacity, booking recommended.', ln: 'Club ya kitoko na Gombe efungwami mpo na session ya jazz. Esika ya moke, reservation ya ntina.' },
@@ -108,7 +129,7 @@ export function demoEvents() {
       stats: { views: 1400, likes: 190, comments: 0, shares: 31, saves: 74, boosts: 12 }, ts: d(-9, 18),
     },
     {
-      id: 'e10', img: 'conf', category: 'conference', price: { on: false, amount: 0, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
+      id: 'e10', img: 'conf', city: 'Kinshasa', category: 'culture', price: { on: false, amount: 0, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
       title: { fr: 'Atelier Photographie de Rue — Kin la Belle', en: 'Street Photography Workshop — Kin la Belle', ln: 'Atelier ya Photo ya Rue — Kin la Belle' },
       sub: { fr: 'Balade photo guidée dans le centre', en: 'Guided photo walk downtown', ln: 'Lilota ya photo na centre' },
       desc: { fr: 'Trois heures de balade photo dans le centre-ville avec un photographe kinois : cadrage, lumière, portraits de rue. Tous niveaux.', en: 'Three hours of photo walk downtown with a Kinshasa photographer: framing, light, street portraits. All levels.', ln: 'Ntuku misato ya lilota ya photo na centre-ville na mopaya-foto ya Kin : cadrage, lumière, portraits ya rue. Niveau nyonso.' },
@@ -119,7 +140,7 @@ export function demoEvents() {
       stats: { views: 950, likes: 130, comments: 22, shares: 26, saves: 66, boosts: 9 }, ts: d(-10, 10),
     },
     {
-      id: 'e11', img: 'gospel', category: 'culture', price: { on: true, amount: 2, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
+      id: 'e11', img: 'gospel', city: 'Kinshasa', category: 'culture', price: { on: true, amount: 2, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
       title: { fr: 'Soirée Contes & Poésie au Kasa', en: 'Tales & Poetry Night at Kasa', ln: 'Soirée ya Makomi & Poesie na Kasa' },
       sub: { fr: 'Conteurs et slameurs de la scène kinoise', en: 'Storytellers and slammers of the Kinshasa scene', ln: 'Baklisti ya makomi mpe slameurs ya Kin' },
       desc: { fr: 'Une soirée de contes traditionnels et de slam en français et lingala. Ouverture par les enfants de l\u2019école du quartier.', en: 'An evening of traditional tales and slam in French and Lingala. Opening by the neighborhood school children.', ln: 'Soirée moko ya makomi ya kala mpe slam na français mpe lingala. Ebandeli na bana ya école ya quartier.' },
@@ -130,29 +151,125 @@ export function demoEvents() {
       stats: { views: 1200, likes: 160, comments: 34, shares: 28, saves: 51, boosts: 11 }, ts: d(-11, 13),
     },
     {
-      id: 'e12', img: 'foot', category: 'sport', price: { on: false, amount: 0, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: false,
-      title: { fr: 'Course solidaire « Kin Court » — 5 km', en: 'Charity run “Kin Runs” — 5 km', ln: 'Course ya boboto « Kin Court » — 5 km' },
-      sub: { fr: 'Au profit de l\u2019école primaire de Matonge', en: 'For the Matonge primary school', ln: 'Mpo na école primaire ya Matonge' },
-      desc: { fr: 'Cinq kilomètres dans les rues de Matonge, au profit d\u2019une école primaire. Chrono officiel, t-shirts pour les 100 premiers inscrits.', en: 'Five kilometers through the streets of Matonge, for a primary school. Official timing, t-shirts for the first 100 registered.', ln: 'Kilomètre 5 na banzela ya Matonge, mpo na école primaire. Chrono officiel, t-shirts mpo na liboso 100.' },
-      program: { fr: '7h : retrait des dossards · 8h : départ · 9h30 : récompenses', en: '7am: bib pickup · 8am: start · 9:30am: awards', ln: '7h : dossards · 8h : bandela · 9h30 : bopesi prix' },
+      id: 'e12', img: 'matadi', city: 'Matadi', category: 'sport', price: { on: false, amount: 0, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: false,
+      title: { fr: 'Course solidaire « Matadi Court » — 5 km', en: 'Charity run “Matadi Runs” — 5 km', ln: 'Course ya boboto « Matadi Court » — 5 km' },
+      sub: { fr: 'Traversée du pont à l\u2019aube, au profit des écoles', en: 'Bridge crossing at dawn, for schools', ln: 'Kwata ya pont na tongo, mpo na ba-école' },
+      desc: { fr: 'Cinq kilomètres au lever du soleil, départ du pont de Matadi, au profit des écoles primaires de Nzanza. Chrono officiel, t-shirts pour les 100 premiers inscrits.', en: 'Five kilometers at sunrise, starting from the Matadi bridge, for the primary schools of Nzanza. Official timing, t-shirts for the first 100 registered.', ln: 'Kilomètre 5 na kokwea ya moi, ebandi na pont ya Matadi, mpo na ba-école primaire ya Nzanza. Chrono officiel, t-shirts mpo na liboso 100.' },
+      program: { fr: '6h : retrait des dossards · 6h45 : échauffement · 7h : départ · 9h : récompenses', en: '6am: bib pickup · 6:45am: warm-up · 7am: start · 9am: awards', ln: '6h : dossards · 6h45 : échauffement · 7h : bandela · 9h : bopesi prix' },
       practical: { fr: 'Point d\u2019eau tous les 2 km. Encadrement médical présent.', en: 'Water point every 2 km. Medical staff present.', ln: 'Mai na kilomètre 2. Baklisti ya minganga bazali.' },
-      organizer: 'u4', date: d(14, 8), commune: 'Kalamu', area: 'Matonge', addr: 'Départ Place Yolo',
-      hashtags: ['course', 'solidarite', 'sport', 'gratuit'],
+      organizer: 'u10', date: d(14, 7), commune: 'Nzanza', area: 'Nzanza', addr: 'Départ : esplanade du pont de Matadi',
+      hashtags: ['course', 'solidarite', 'matadi', 'gratuit'],
       stats: { views: 1700, likes: 240, comments: 40, shares: 58, saves: 130, boosts: 19 }, ts: d(-12, 9),
+    },
+    {
+      id: 'e13', img: 'lubi', city: 'Lubumbashi', category: 'concert', price: { on: true, amount: 8, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
+      title: { fr: 'Rumba sur les Collines — Lubumbashi', en: 'Rumba on the Hills — Lubumbashi', ln: 'Rumba na Banga — Lubumbashi' },
+      sub: { fr: 'Les voix du Katanga en plein air', en: 'The voices of Katanga outdoors', ln: 'Bomonzi ya Katanga na libanda' },
+      desc: { fr: 'La rumba débarque à Lubumbashi : deux orchestres katangais, danseurs et choeur, sur l\u2019esplanade de Golf, au coucher du soleil.', en: 'Rumba lands in Lubumbashi: two Katangan orchestras, dancers and choir, on the Golf esplanade at sunset.', ln: 'Rumba eyei Lubumbashi : orchestres mibale ya Katanga, bandelei mpe chorale, na esplanade ya Golf, na kokwea ya moi.' },
+      program: { fr: '17h : ouverture · 18h : orchestre 1 · 19h30 : orchestre 2 · 21h : DJ rumba', en: '5pm: opening · 6pm: orchestra 1 · 7:30pm: orchestra 2 · 9pm: rumba DJ', ln: '17h : efungwami · 18h : orchestre 1 · 19h30 : orchestre 2 · 21h : DJ rumba' },
+      practical: { fr: 'Ambiance familiale, restauration rapide sur place.', en: 'Family atmosphere, fast food on site.', ln: 'Ambiance ya libota, bilei ya lomba esika.' },
+      organizer: 'u11', date: d(5, 17), commune: 'Golf', area: 'Golf', addr: 'Esplanade de Golf, avenue Kasaï',
+      hashtags: ['rumba', 'lubumbashi', 'katanga', 'musiquelive'],
+      stats: { views: 2600, likes: 350, comments: 51, shares: 66, saves: 120, boosts: 27 }, ts: d(-4, 11),
+    },
+    {
+      id: 'e14', img: 'goma', city: 'Goma', category: 'sport', price: { on: true, amount: 25, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
+      title: { fr: 'Ascension nocturne du Nyiragongo', en: 'Night ascent of Nyiragongo', ln: 'Botamboli ya butu na Nyiragongo' },
+      sub: { fr: 'Départ de groupe, guides certifiés, retour au lever du jour', en: 'Group departure, certified guides, return at dawn', ln: 'Bokende ya libota, guides ya certificat, kozonga na tongo' },
+      desc: { fr: 'L\u2019aventure d\u2019une nuit : montée au cratère du Nyiragongo avec des guides certifiés, bivouac au sommet et lever du soleil sur le lac de lave. Matériel fourni.', en: 'A one-night adventure: climb to the Nyiragongo crater with certified guides, bivouac at the summit and sunrise over the lava lake. Gear provided.', ln: 'Aventure ya butu moko : botamboli na cratère ya Nyiragongo na guides ya certificat, bivouac na likolo mpe kokwea ya moi na mai ya moto. Milulu epesami.' },
+      program: { fr: '15h : briefing à Kibati · 16h : départ · 20h : arrivée au sommet · 5h : lever du soleil · 10h : retour', en: '3pm: briefing at Kibati · 4pm: departure · 8pm: summit · 5am: sunrise · 10am: return', ln: '15h : briefing na Kibati · 16h : bokende · 20h : likolo · 5h : moi etanani · 10h : kozonga' },
+      practical: { fr: 'Sac de couchage et parka fournis. Condition physique requise.', en: 'Sleeping bag and parka provided. Good fitness required.', ln: 'Sac ya butu mpe parka epesami. Makasi ya nzoto esengeli.' },
+      organizer: 'u12', date: d(6, 15), commune: 'Les Volcans', area: 'Kibati', addr: 'Rendez-vous : bureau du parc, route de Kibati',
+      hashtags: ['nyiragongo', 'goma', 'randonnee', 'aventure'],
+      stats: { views: 4200, likes: 560, comments: 77, shares: 130, saves: 310, boosts: 55 }, ts: d(-3, 8),
+    },
+    {
+      id: 'e15', img: 'kivu', city: 'Goma', category: 'party', price: { on: true, amount: 10, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: false,
+      title: { fr: 'Sunset Beach — Soirée au bord du Kivu', en: 'Sunset Beach — Party on the Kivu shore', ln: 'Sunset Beach — Soirée pembeni ya Kivu' },
+      sub: { fr: 'Sable, guirlandes et DJ jusqu\u2019à minuit', en: 'Sand, string lights and DJ until midnight', ln: 'Sable, guirlandes mpe DJ tika na mitano ya nkama' },
+      desc: { fr: 'Le spot plage de Goma s\u2019installe pour la soirée : transats, guirlandes entre les palmiers, DJ afro-house et barbecue au coucher du soleil.', en: 'Goma\u2019s beach spot sets up for the night: deckchairs, string lights between palm trees, afro-house DJ and barbecue at sunset.', ln: 'Esika plage ya Goma etandami mpo na soirée : transats, guirlandes kati ya ba-palmier, DJ afro-house mpe barbecue na kokwea ya moi.' },
+      program: { fr: '16h : ouverture · 18h : barbecue · 19h : DJ set · 23h : fin', en: '4pm: opening · 6pm: barbecue · 7pm: DJ set · 11pm: end', ln: '16h : efungwami · 18h : barbecue · 19h : DJ set · 23h : suka' },
+      practical: { fr: 'Navette depuis Himbi à 15h30 et 16h30.', en: 'Shuttle from Himbi at 3:30pm and 4:30pm.', ln: 'Navette Bandela na Himbi 15h30 mpe 16h30.' },
+      organizer: 'u13', date: d(3, 16), commune: 'Himbi', area: 'Himbi', addr: 'Plage de Himbi, bord du lac',
+      hashtags: ['kivu', 'goma', 'sunset', 'plage'],
+      stats: { views: 3100, likes: 430, comments: 62, shares: 88, saves: 145, boosts: 34 }, ts: d(-2, 10),
+    },
+    {
+      id: 'e16', img: 'boma', city: 'Boma', category: 'culture', price: { on: false, amount: 0, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
+      title: { fr: 'Festival du Patrimoine de Boma', en: 'Boma Heritage Festival', ln: 'Festival ya Bosolo ya Boma' },
+      sub: { fr: 'Danses kongo, conteurs et gastronomie au bord du fleuve', en: 'Kongo dances, storytellers and riverside food', ln: 'Bokabwa ya kongo, baklisti mpe bilei pembeni ya mai' },
+      desc: { fr: 'Un week-end pour célébrer l\u2019histoire de Boma : danses kongo traditionnelles, conteurs, expositions photo et stands gastronomiques au bord du fleuve Nzadi.', en: 'A weekend to celebrate Boma\u2019s history: traditional Kongo dances, storytellers, photo exhibitions and food stands by the Nzadi river.', ln: 'Weekend moko mpo na bondimela lisolo ya Boma : bokabwa ya kongo ya kala, baklisti, ba-photo mpe stand ya bilei pembeni ya mai Nzadi.' },
+      program: { fr: '10h : ouverture · 11h : danses kongo · 14h : contes · 16h : concert · 19h : clôture', en: '10am: opening · 11am: Kongo dances · 2pm: tales · 4pm: concert · 7pm: closing', ln: '10h : efungwami · 11h : bokabwa ya kongo · 14h : makomi · 16h : concert · 19h : botuli' },
+      practical: { fr: 'Entrée libre pour tous, enfants inclus.', en: 'Free entry for everyone, children included.', ln: 'Kokota ya boboto epai ya bato nyonso, bana mpe.' },
+      organizer: 'u14', date: d(9, 10), commune: 'Centre', area: 'Centre', addr: 'Quai fluvial, avenue de la Paix',
+      hashtags: ['patrimoine', 'boma', 'culture', 'kongo', 'gratuit'],
+      stats: { views: 1500, likes: 260, comments: 31, shares: 42, saves: 95, boosts: 14 }, ts: d(-6, 9),
+    },
+    {
+      id: 'e17', img: 'kisan', city: 'Kisangani', category: 'fair', price: { on: true, amount: 3, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
+      title: { fr: 'Fête du Fleuve — Kisangani', en: 'River Festival — Kisangani', ln: 'Fête ya Mai — Kisangani' },
+      sub: { fr: 'Pirogues musicales, marché d\u2019artisans et fanfare', en: 'Musical pirogues, craft market and brass band', ln: 'Pirogues ya nzembo, marché ya bakrei mpe fanfare' },
+      desc: { fr: 'La Fête du Fleuve revient à Kisangani : descente des pirogues musicales sur la Tshopo, marché d\u2019artisans, fanfare et feu d\u2019artifice au crépuscule.', en: 'The River Festival returns to Kisangani: musical pirogue parade on the Tshopo, craft market, brass band and fireworks at dusk.', ln: 'Fête ya Mai ezei na Kisangani : bokende ya pirogues ya nzembo na Tshopo, marché ya bakrei, fanfare mpe feu ya artifice na butu.' },
+      program: { fr: '9h : marché · 14h : pirogues · 17h : fanfare · 18h30 : feu d\u2019artifice', en: '9am: market · 2pm: pirogues · 5pm: brass band · 6:30pm: fireworks', ln: '9h : marché · 14h : pirogues · 17h : fanfare · 18h30 : feu ya artifice' },
+      practical: { fr: 'Embarcadère accessible à pied depuis Makiso.', en: 'Pier accessible on foot from Makiso.', ln: 'Embarcadère ekoki kokwama na makolo Bandela na Makiso.' },
+      organizer: 'u15', date: d(11, 9), commune: 'Makiso', area: 'Makiso', addr: 'Embarcadère de la Tshopo',
+      hashtags: ['fleuve', 'kisangani', 'pirogues', 'artisanat'],
+      stats: { views: 1900, likes: 300, comments: 44, shares: 60, saves: 110, boosts: 21 }, ts: d(-5, 12),
+    },
+    {
+      id: 'e18', img: 'foot', city: 'Lubumbashi', category: 'sport', price: { on: true, amount: 2, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: false,
+      title: { fr: 'Tournoi de beach soccer — Ruashi', en: 'Beach soccer tournament — Ruashi', ln: 'Tournoi ya beach soccer — Ruashi' },
+      sub: { fr: 'Équipes de quartier, finale sous projecteurs', en: 'Neighborhood teams, floodlit final', ln: 'Bibotte ya quartier, finale na lumière' },
+      desc: { fr: 'Le beach soccer s\u2019installe à Ruashi : seize équipes de quartiers, buvette et finale sous projecteurs en nocturne.', en: 'Beach soccer comes to Ruashi: sixteen neighborhood teams, drinks and a floodlit night final.', ln: 'Beach soccer etandami na Ruashi : bibotte zomi na motoba ya quartier, buvette mpe finale na lumière ya butu.' },
+      program: { fr: '13h : phase de groupes · 16h : quarts · 18h30 : finale · 20h : remise des prix', en: '1pm: group stage · 4pm: quarters · 6:30pm: final · 8pm: awards', ln: '13h : groupe · 16h : quarts · 18h30 : finale · 20h : bopesi prix' },
+      practical: { fr: 'Tribunes gratuites, buvette solidaire du club.', en: 'Free stands, solidarity bar for the club.', ln: 'Tribunes ya boboto, buvette ya club.' },
+      organizer: 'u11', date: d(8, 13), commune: 'Ruashi', area: 'Ruashi', addr: 'Terrain de Ruashi, route de Kasumbalesa',
+      hashtags: ['beachsoccer', 'lubumbashi', 'sport', 'ruashi'],
+      stats: { views: 2200, likes: 310, comments: 48, shares: 57, saves: 105, boosts: 23 }, ts: d(-7, 14),
+    },
+    {
+      id: 'e19', img: 'gastro', city: 'Bukavu', category: 'gastronomy', price: { on: true, amount: 6, cur: 'USD' }, allowComments: true, showLikes: true, allowMessages: true,
+      title: { fr: 'Saveurs du Kivu — Marché gourmand', en: 'Flavors of Kivu — Food market', ln: 'Bilei ya Kivu — marché ya bilei' },
+      sub: { fr: 'Poissons du lac, mizuzu et café de Minova', en: 'Lake fish, mizuzu and Minova coffee', ln: 'Mbisi ya mai, mizuzu mpe kafe ya Minova' },
+      desc: { fr: 'Les cuisinières de Bukavu se donnent rendez-vous à Ibanda : ndakala et tilapia du lac, mizuzu croustillants, café de Minova et jus locaux.', en: 'Bukavu\u2019s cooks meet at Ibanda: ndakala and lake tilapia, crispy mizuzu, Minova coffee and local juices.', ln: 'Basali bilei ya Bukavu bakutani na Ibanda : ndakala mpe tilapia ya mai, mizuzu ya kitoko, kafe ya Minova mpe mai ya matoki.' },
+      program: { fr: '10h : ouverture · 12h30 : concours de ndakala · 15h : atelier mizuzu · 18h : clôture', en: '10am: opening · 12:30pm: ndakala contest · 3pm: mizuzu workshop · 6pm: closing', ln: '10h : efungwami · 12h30 : likanisi ya ndakala · 15h : atelier mizuzu · 18h : botuli' },
+      practical: { fr: 'Tables ombragées face au lac.', en: 'Shaded tables facing the lake.', ln: 'Mesa ya mpuyu monoko na mai.' },
+      organizer: 'u16', date: d(13, 10), commune: 'Ibanda', area: 'Ibanda', addr: 'Place publique d\u2019Ibanda, bord du lac',
+      hashtags: ['gastro', 'bukavu', 'kivu', 'ndakala'],
+      stats: { views: 1300, likes: 220, comments: 26, shares: 35, saves: 88, boosts: 12 }, ts: d(-8, 10),
+    },
+    {
+      id: 'e20', img: 'wax', city: 'Mbuji-Mayi', category: 'fair', price: { on: true, amount: 4, cur: 'CDF' }, allowComments: true, showLikes: true, allowMessages: true,
+      title: { fr: 'Salon du Pagne de Mbuji-Mayi', en: 'Mbuji-Mayi Wax Fair', ln: 'Salon ya Pagne ya Mbuji-Mayi' },
+      sub: { fr: 'Créateurs kasaïens et défilé de clôture', en: 'Kasaï designers and closing runway', ln: 'Bakrei ya Kasaï mpe défilé ya botuli' },
+      desc: { fr: 'Le pagne kasaïen à l\u2019honneur : vingt créateurs, ateliers de tissage, et grand défilé de clôture au son du mutuashi.', en: 'Kasaï wax in the spotlight: twenty designers, weaving workshops, and a grand closing runway to the sound of mutuashi.', ln: 'Pagne ya Kasaï na ntina : bakrei zomi na mibale, atelier ya koteka, mpe défilé ya ntina na nzembo ya mutuashi.' },
+      program: { fr: '9h : ouverture · 11h : atelier tissage · 15h : défilé · 17h : mutuashi', en: '9am: opening · 11am: weaving workshop · 3pm: runway · 5pm: mutuashi', ln: '9h : efungwami · 11h : atelier ya koteka · 15h : défilé · 17h : mutuashi' },
+      practical: { fr: 'Paiement CDF et mobile money accepté.', en: 'CDF and mobile money payment accepted.', ln: 'Mbongo CDF mpe mobile money endimami.' },
+      organizer: 'u17', date: d(15, 9), commune: 'Diulu', area: 'Diulu', addr: 'Centre culturel de Diulu',
+      hashtags: ['pagne', 'mbujimayi', 'kasai', 'mode'],
+      stats: { views: 1100, likes: 190, comments: 24, shares: 30, saves: 76, boosts: 10 }, ts: d(-9, 11),
     },
   ];
 }
 
 // Profils (organisateurs fictifs, divers)
 export const demoUsers = [
-  { id: 'u2', name: 'Didier Mwanza', username: 'didier.m', bio: { fr: 'Organisateur de soirées à la Gombe. Le rooftop c\u2019est ma maison.', en: 'Party organizer in Gombe. The rooftop is my home.', ln: 'Organisateur ya soirée na Gombe. Rooftop nde ndako na ngai.' }, verified: true, followers: 2840, following: 130, posts: 34, color: '#9B1C28' },
-  { id: 'u3', name: 'Fanny Lokwa', username: 'fanny.l', bio: { fr: 'Productrice de concerts. La rumba, c\u2019est la vie.', en: 'Concert producer. Rumba is life.', ln: 'Productrice ya concerts. Rumba nde bomoi.' }, verified: true, followers: 5210, following: 89, posts: 56, color: '#0E0E10' },
-  { id: 'u4', name: 'Serge Ilunga', username: 'serge.i', bio: { fr: 'Le sport réunit, j\u2019organise ça à Bandal.', en: 'Sport brings people together, I organize it in Bandal.', ln: 'Sport esangisa bato, nay organiser na Bandal.' }, verified: false, followers: 980, following: 210, posts: 18, color: '#2E7D5B' },
-  { id: 'u5', name: 'Grâce Kabuya', username: 'grace.k', bio: { fr: 'Tech & formation. J\u2019aide les jeunes à lancer leurs projets.', en: 'Tech & training. I help young people launch their projects.', ln: 'Tech & formation. Nasalisa bana ya mikolo na kobanda projet.' }, verified: true, followers: 3130, following: 402, posts: 41, color: '#9B1C28' },
-  { id: 'u6', name: 'Maman Ngiza', username: 'maman.ngiza', bio: { fr: 'Créatrice de mode, reine du pagne.', en: 'Fashion designer, queen of wax.', ln: 'Créatrice ya mode, ngangi ya pagne.' }, verified: true, followers: 7640, following: 55, posts: 88, color: '#0E0E10' },
-  { id: 'u7', name: 'Pasteur Élie', username: 'pasteur.elie', bio: { fr: 'Servir par le chant et la parole.', en: 'Serving through song and word.', ln: 'Kosalela na nzembo na liloba.' }, verified: false, followers: 1540, following: 12, posts: 23, color: '#2E7D5B' },
-  { id: 'u8', name: 'Chef Fabi', username: 'chef.fabi', bio: { fr: 'Cuisinière, passionnée de chikwangue et de pondu.', en: 'Cook, passionate about chikwangue and pondu.', ln: 'Moklisti ya bilei, na mposa ya chikwangue na pondu.' }, verified: false, followers: 2210, following: 178, posts: 29, color: '#9B1C28' },
-  { id: 'u9', name: 'Naomi Kanku', username: 'naomi.k', bio: { fr: 'Rooftops, cocktails et sunsets. Gombe girl.', en: 'Rooftops, cocktails and sunsets. Gombe girl.', ln: 'Rooftops, cocktails mpe sunsets. Mwana ya Gombe.' }, verified: false, followers: 1120, following: 340, posts: 15, color: '#0E0E10' },
+  { id: 'u2', name: 'Didier Mwanza', username: 'didier.m', city: 'Kinshasa', bio: { fr: 'Organisateur de soirées à la Gombe. Le rooftop c\u2019est ma maison.', en: 'Party organizer in Gombe. The rooftop is my home.', ln: 'Organisateur ya soirée na Gombe. Rooftop nde ndako na ngai.' }, verified: true, followers: 2840, following: 130, posts: 34, color: '#9B1C28' },
+  { id: 'u3', name: 'Fanny Lokwa', username: 'fanny.l', city: 'Kinshasa', bio: { fr: 'Productrice de concerts. La rumba, c\u2019est la vie.', en: 'Concert producer. Rumba is life.', ln: 'Productrice ya concerts. Rumba nde bomoi.' }, verified: true, followers: 5210, following: 89, posts: 56, color: '#0E0E10' },
+  { id: 'u4', name: 'Serge Ilunga', username: 'serge.i', city: 'Kinshasa', bio: { fr: 'Le sport réunit, j\u2019organise ça à Bandal.', en: 'Sport brings people together, I organize it in Bandal.', ln: 'Sport esangisa bato, nay organiser na Bandal.' }, verified: false, followers: 980, following: 210, posts: 18, color: '#5E0F1A' },
+  { id: 'u5', name: 'Grâce Kabuya', username: 'grace.k', city: 'Kinshasa', bio: { fr: 'Tech & formation. J\u2019aide les jeunes à lancer leurs projets.', en: 'Tech & training. I help young people launch their projects.', ln: 'Tech & formation. Nasalisa bana ya mikolo na kobanda projet.' }, verified: true, followers: 3130, following: 402, posts: 41, color: '#9B1C28' },
+  { id: 'u6', name: 'Maman Ngiza', username: 'maman.ngiza', city: 'Kinshasa', bio: { fr: 'Créatrice de mode, reine du pagne.', en: 'Fashion designer, queen of wax.', ln: 'Créatrice ya mode, ngangi ya pagne.' }, verified: true, followers: 7640, following: 55, posts: 88, color: '#0E0E10' },
+  { id: 'u7', name: 'Pasteur Élie', username: 'pasteur.elie', city: 'Kinshasa', bio: { fr: 'Servir par le chant et la parole.', en: 'Serving through song and word.', ln: 'Kosalela na nzembo na liloba.' }, verified: false, followers: 1540, following: 12, posts: 23, color: '#5E0F1A' },
+  { id: 'u8', name: 'Chef Fabi', username: 'chef.fabi', city: 'Kinshasa', bio: { fr: 'Cuisinière, passionnée de chikwangue et de pondu.', en: 'Cook, passionate about chikwangue and pondu.', ln: 'Moklisti ya bilei, na mposa ya chikwangue na pondu.' }, verified: false, followers: 2210, following: 178, posts: 29, color: '#9B1C28' },
+  { id: 'u9', name: 'Naomi Kanku', username: 'naomi.k', city: 'Kinshasa', bio: { fr: 'Rooftops, cocktails et sunsets. Gombe girl.', en: 'Rooftops, cocktails and sunsets. Gombe girl.', ln: 'Rooftops, cocktails mpe sunsets. Mwana ya Gombe.' }, verified: false, followers: 1120, following: 340, posts: 15, color: '#0E0E10' },
+  { id: 'u10', name: 'Aimé Ntumba', username: 'aime.n', city: 'Matadi', bio: { fr: 'Coureur du dimanche, organisateur de courses solidaires à Matadi.', en: 'Sunday runner, charity run organizer in Matadi.', ln: 'Moluki ya dimanche, organisateur ya course ya boboto na Matadi.' }, verified: false, followers: 640, following: 95, posts: 11, color: '#5E0F1A' },
+  { id: 'u11', name: 'Jonas Kibwe', username: 'jonas.k', city: 'Lubumbashi', bio: { fr: 'Rumba et sport à Lubumbashi. Les collines ont le rythme.', en: 'Rumba and sport in Lubumbashi. The hills have rhythm.', ln: 'Rumba mpe sport na Lubumbashi. Banga na nzela ya mozelo.' }, verified: true, followers: 1980, following: 143, posts: 27, color: '#9B1C28' },
+  { id: 'u12', name: 'Espérance Bishishi', username: 'esperance.b', city: 'Goma', bio: { fr: 'Guide volcanologue. Le Nyiragongo, je le connais par cœur.', en: 'Volcanologist guide. I know Nyiragongo by heart.', ln: 'Guide ya volcan. Nyiragongo, nayangi na motema.' }, verified: true, followers: 4420, following: 76, posts: 62, color: '#0E0E10' },
+  { id: 'u13', name: 'Glodi Muhindo', username: 'glodi.m', city: 'Goma', bio: { fr: 'Sunsets sur le Kivu, plages et bonnes ondes.', en: 'Sunsets on Kivu, beaches and good vibes.', ln: 'Kokwea ya moi na Kivu, plage mpe ndule ya malamu.' }, verified: false, followers: 890, following: 210, posts: 19, color: '#9B1C28' },
+  { id: 'u14', name: 'Maman Nsingi', username: 'maman.nsingi', city: 'Boma', bio: { fr: 'Gardienne du patrimoine de Boma, conteuse.', en: 'Keeper of Boma\u2019s heritage, storyteller.', ln: 'Momobiki ya bosolo ya Boma, molobi ya makomi.' }, verified: false, followers: 760, following: 48, posts: 14, color: '#5E0F1A' },
+  { id: 'u15', name: 'Tito Lolingo', username: 'tito.l', city: 'Kisangani', bio: { fr: 'La Tshopo, le fleuve et les pirogues musicales.', en: 'The Tshopo, the river and musical pirogues.', ln: 'Tshopo, mai monene mpe pirogues ya nzembo.' }, verified: false, followers: 680, following: 87, posts: 12, color: '#9B1C28' },
+  { id: 'u16', name: 'Maman Chantal', username: 'maman.chantal', city: 'Bukavu', bio: { fr: 'La cuisine du Kivu, du lac à l\u2019assiette.', en: 'Kivu cuisine, from the lake to the plate.', ln: 'Bilei ya Kivu, Bandela na mai kino na plato.' }, verified: false, followers: 1020, following: 65, posts: 21, color: '#0E0E10' },
+  { id: 'u17', name: 'Divine Kalala', username: 'divine.k', city: 'Mbuji-Mayi', bio: { fr: 'Pagne kasaïen, mode et mutuashi.', en: 'Kasaï wax, fashion and mutuashi.', ln: 'Pagne ya Kasaï, mode mpe mutuashi.' }, verified: false, followers: 1450, following: 122, posts: 24, color: '#5E0F1A' },
 ];
 
 // Notifications de démonstration (pour l'utilisateur démo)
@@ -187,4 +304,4 @@ export const demoConversations = [
 ];
 
 // Suggestions de hashtags pendant la frappe (publier) + tendances
-export const demoHashtagPool = ['rumba', 'concertkin', 'musiquelive', 'weekendakin', 'afrovibes', 'nightlife', 'amapiano', 'gombe', 'techkin', 'entrepreneuriat', 'networking', 'gratuit', 'footballkin', 'sport', 'bandal', 'pagne', 'mode', 'wax', 'createurskin', 'gospel', 'louange', 'chorale', 'gastro', 'foodkin', 'pondu', 'sortirakin', 'rooftop', 'sunset', 'cocktails', 'jazz', 'live', 'acoustique', 'photo', 'atelier', 'kinlabelle', 'contes', 'slam', 'culture', 'poesie', 'course', 'solidarite'];
+export const demoHashtagPool = ['rumba', 'concertkin', 'musiquelive', 'weekendakin', 'afrovibes', 'nightlife', 'amapiano', 'gombe', 'techkin', 'entrepreneuriat', 'networking', 'gratuit', 'footballkin', 'sport', 'bandal', 'pagne', 'mode', 'wax', 'createurskin', 'gospel', 'louange', 'chorale', 'gastro', 'foodkin', 'pondu', 'sortirakin', 'rooftop', 'sunset', 'cocktails', 'jazz', 'live', 'acoustique', 'photo', 'atelier', 'kinlabelle', 'contes', 'slam', 'culture', 'poesie', 'course', 'solidarite', 'matadi', 'lubumbashi', 'katanga', 'nyiragongo', 'goma', 'randonnee', 'aventure', 'kivu', 'plage', 'patrimoine', 'boma', 'kongo', 'fleuve', 'kisangani', 'pirogues', 'artisanat', 'beachsoccer', 'ruashi', 'bukavu', 'ndakala', 'mbujimayi', 'kasai'];

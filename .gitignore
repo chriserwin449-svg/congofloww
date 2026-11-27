@@ -1,15 +1,2 @@
-# ——— Secrets ———
-.env
-.env.*
-*.pem
-*.key
-
-# ——— Dépendances ———
-node_modules/
-
-# ——— Skills / outils internes ———
 skills/
-
-# ——— Divers ———
-.DS_Store
-*.log
+node_modules/

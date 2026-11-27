@@ -1,6 +1,6 @@
-// CongoFlow — Authentification + onboarding (5 questions)
-import { t, tx, state, save, uid, setLang, IMG } from './core.js';
-import { COMMUNES } from './data/demo.js';
+// CongoFlow — Authentification + onboarding (4 questions + ville)
+import { t, tx, state, save, uid, setLang, IMG, CITIES, icon } from './core.js';
+import { cityFromIP } from './data/cities.js';
 
 const authImgs = ['concert', 'dance', 'orga', 'street', 'culture'];
 const imgAuth = (id, cls = '', alt = '') => `<img src="${IMG(id)}" class="${cls}" alt="${alt}" loading="lazy" decoding="async">`;
@@ -9,7 +9,10 @@ export function renderAuth(root, nav) {
   const s = state();
   let mode = 'login';        // login | signup
   let showPwd = false;       // œil : bascule le type sans jamais effacer la saisie
+  let fails = 0;             // limitation des tentatives (anti force brute, simulée)
+  let lockUntil = 0;
   let timer = null;
+  let cityPicked = CITIES[0].name;
 
   root.innerHTML = `
   <div class="auth-page">
@@ -38,7 +41,7 @@ export function renderAuth(root, nav) {
         </div>
         <div id="authBody"></div>
       </div>
-      <p class="auth-foot t-small">CongoFlow · Kinshasa 🇨🇩</p>
+      <p class="auth-foot t-small">CongoFlow · RDC 🇨🇩</p>
     </div>
   </div>`;
 
@@ -65,15 +68,30 @@ export function renderAuth(root, nav) {
     renderForm();
   }));
 
-  function fieldErr(name, msgKey) {
+  // Garde le champ actif visible quand le clavier mobile s'ouvre
+  body.addEventListener('focusin', e => {
+    if (e.target.matches('input, textarea, select')) {
+      setTimeout(() => {
+        const card = $('#authCard');
+        const r = e.target.getBoundingClientRect();
+        const cr = card.getBoundingClientRect();
+        // si le champ sort du bas visible de la carte → le faire remonter doucement
+        if (r.bottom > cr.bottom - 8) {
+          card.scrollTo({ top: card.scrollTop + (r.bottom - cr.bottom) + 24, behavior: 'smooth' });
+        }
+      }, 260);
+    }
+  });
+
+  function fieldErr(name, msg) {
     const f = body.querySelector(`[data-field="${name}"]`);
     if (!f) return;
     const msgEl = f.querySelector('.field-msg');
     f.classList.add('invalid', 'cf-shake');
     setTimeout(() => f.classList.remove('cf-shake'), 400);
-    msgEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 7v6M12 16.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> ${t(msgKey)}`;
+    msgEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 7v6M12 16.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> ${msg}`;
     msgEl.classList.add('show');
-    f.querySelector('input')?.focus();
+    f.querySelector('input, select')?.focus();
   }
   function clearErrs() { body.querySelectorAll('.field.invalid').forEach(f => f.classList.remove('invalid')); body.querySelectorAll('.field-msg.show').forEach(m => m.classList.remove('show')); }
 
@@ -140,6 +158,21 @@ export function renderAuth(root, nav) {
           <input type="checkbox" id="phoneConsent">
           <span>${t('auth.phoneConsent')}</span>
         </label>
+      </div>
+
+      <div class="field" data-field="city">
+        <label for="f-city">${t('auth.cityQuestion')}</label>
+        <div class="city-pick" id="cityPick">
+          ${CITIES.slice(0, 6).map(c => `<button type="button" class="city-chip ${c.name === cityPicked ? 'sel' : ''}" data-city="${c.name}">${icon('pin', 13)} ${c.name}</button>`).join('')}
+          <details class="city-more">
+            <summary class="city-chip">${t('loc.changeCity')}…</summary>
+            <div class="city-more-list">
+              ${CITIES.slice(6).map(c => `<button type="button" class="city-chip ${c.name === cityPicked ? 'sel' : ''}" data-city="${c.name}">${c.name}</button>`).join('')}
+            </div>
+          </details>
+        </div>
+        <p class="field-msg" role="alert"></p>
+        <p class="t-small mt-8">${t('auth.cityQuestionHint')}</p>
       </div>` : `<button class="link-btn" id="forgotBtn">${t('auth.passwordForgot')}</button>`}
 
       <button class="btn btn-primary btn-block btn-lg mt-16" id="authGo">
@@ -148,8 +181,7 @@ export function renderAuth(root, nav) {
       <p class="terms-note t-small">${t('auth.termsNote')}</p>
       <p class="slow-hint t-small" id="slowHint">${t('auth.errSlowNetwork')}</p>`;
 
-    // Afficher/masquer le mot de passe — sans re-rendre le formulaire :
-    // la saisie (et le focus) sont conservés tels quels.
+    // Afficher/masquer le mot de passe — sans re-rendre le formulaire
     const togglePwd = () => {
       showPwd = !showPwd;
       ['#f-pwd', '#f-pwd2'].forEach(idq => {
@@ -173,7 +205,7 @@ export function renderAuth(root, nav) {
       setTimeout(() => {
         btn.disabled = false;
         body.querySelector('#googleHint')?.classList.add('hidden');
-        finalize(false, 'toi.google@gmail.com', 'google-demo', 'Google Demo', 'me_google');
+        finalize(false, 'toi.google@gmail.com', 'google-demo', 'Google Demo', 'me_google', cityPicked);
       }, 1400);
     });
 
@@ -186,27 +218,39 @@ export function renderAuth(root, nav) {
       sync();
     }
 
+    // Choix de la ville (inscription)
+    body.querySelectorAll('[data-city]').forEach(b => b.addEventListener('click', () => {
+      cityPicked = b.dataset.city;
+      body.querySelectorAll('[data-city]').forEach(x => x.classList.toggle('sel', x.dataset.city === cityPicked));
+      body.querySelector('.city-more')?.removeAttribute('open');
+    }));
+
     // Soumission e-mail
     body.querySelector('#authGo').addEventListener('click', () => {
       clearErrs();
+      // limitation des tentatives
+      if (Date.now() < lockUntil) {
+        const mins = Math.ceil((lockUntil - Date.now()) / 60000);
+        return toast(t('auth.errTooManyTries', { n: mins }), 'err');
+      }
       const get = id => (body.querySelector(id)?.value || '').trim();
       const em = get('#f-email');
       const pwd = body.querySelector('#f-pwd')?.value || '';
       const pwd2 = body.querySelector('#f-pwd2')?.value || '';
       const phone = get('#f-phone');
 
-      if (isSignup && get('#f-name').length < 2) return fieldErr('name', 'auth.errNameRequired');
-      if (!em) return fieldErr('email', 'auth.errEmailRequired');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) return fieldErr('email', 'auth.errEmailInvalid');
-      if (!pwd) return fieldErr('password', 'auth.errPasswordRequired');
+      if (isSignup && get('#f-name').length < 2) return fieldErr('name', t('auth.errNameRequired'));
+      if (!em) return fieldErr('email', t('auth.errEmailRequired'));
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) return fieldErr('email', t('auth.errEmailInvalid'));
+      if (!pwd) return fieldErr('password', t('auth.errPasswordRequired'));
       if (isSignup) {
-        if (pwd.length < 8) return fieldErr('password', 'auth.errPasswordShort');
-        if (!/\d/.test(pwd)) return fieldErr('password', 'auth.errPasswordWeak');
-        if (pwd2 !== pwd) return fieldErr('confirm', 'auth.errPasswordMismatch');
+        if (pwd.length < 8) return fieldErr('password', t('auth.errPasswordShort'));
+        if (!/\d/.test(pwd)) return fieldErr('password', t('auth.errPasswordWeak'));
+        if (pwd2 !== pwd) return fieldErr('confirm', t('auth.errPasswordMismatch'));
         if (phone) {
           const ph = phone.replace(/[\s.-]/g, '');
-          if (!/^\+?\d{9,15}$/.test(ph)) return fieldErr('phone', 'auth.errPhoneInvalid');
-          if (!body.querySelector('#phoneConsent').checked) return fieldErr('phone', 'auth.errPhoneConsent');
+          if (!/^\+?\d{9,15}$/.test(ph)) return fieldErr('phone', t('auth.errPhoneInvalid'));
+          if (!body.querySelector('#phoneConsent').checked) return fieldErr('phone', t('auth.errPhoneConsent'));
         }
       }
       goLogin(isSignup, em, pwd, get('#f-name'), phone);
@@ -219,7 +263,7 @@ export function renderAuth(root, nav) {
       <h1 class="t-h2 auth-title">${t('auth.passwordReset')}</h1>
       <div class="field" data-field="email">
         <label for="f-email2">${t('auth.email')}</label>
-        <input id="f-email2" type="email" placeholder="${t('auth.emailPlaceholder')}">
+        <input id="f-email2" type="email" placeholder="${t('auth.emailPlaceholder')}" autocomplete="email">
         <p class="field-msg" role="alert"></p>
       </div>
       <button class="btn btn-primary btn-block btn-lg mt-16" id="resetGo">${t('auth.passwordReset')}</button>
@@ -227,7 +271,7 @@ export function renderAuth(root, nav) {
     body.querySelector('#backBtn').addEventListener('click', renderForm);
     body.querySelector('#resetGo').addEventListener('click', () => {
       const em = (body.querySelector('#f-email2').value || '').trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) return fieldErr('email', 'auth.errEmailInvalid');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) return fieldErr('email', t('auth.errEmailInvalid'));
       toast(t('auth.passwordResetSent'), 'ok');
       renderForm();
     });
@@ -243,11 +287,14 @@ export function renderAuth(root, nav) {
     setTimeout(() => {
       clearTimeout(slowT);
       const st = state();
-      const existing = st.user && st.user.email === email;
+      // compte déjà connu ? (inscrit précédemment sur cet appareil)
+      const knownAccount = st.users.find(u => u.email === email.toLowerCase()) || null;
       const known = ['demo@congoflow.cd', 'grace@congoflow.cd'].includes(email.toLowerCase());
-      const wrongPwd = pwd !== 'demo1234' && !existing;
-      if (!isSignup && wrongPwd && !known && !existing) {
-        // mot de passe incorrect → la carte vibre, la saisie est conservée
+      const wrongPwd = pwd !== 'demo1234' && !knownAccount && !known;
+      if (!isSignup && wrongPwd) {
+        // mot de passe incorrect → limite de tentatives + vibration
+        fails++;
+        if (fails >= 5) lockUntil = Date.now() + 2 * 60000; // 2 minutes
         btn.querySelector('.btn-spinner')?.remove(); label.style.display = ''; btn.disabled = false;
         $('#authCard').classList.add('cf-vibrate');
         setTimeout(() => $('#authCard').classList.remove('cf-vibrate'), 500);
@@ -266,11 +313,26 @@ export function renderAuth(root, nav) {
 
   function finalize(isSignup, email, pwd, name, userId, phone) {
     const st = state();
+    // connexion d'un compte déjà inscrit sur cet appareil : on le réutilise tel quel
+    // (le tutoriel ne doit réapparaître qu'à la création du compte)
+    const existing = st.users.find(u => u.email === email.toLowerCase()) || null;
+    if (!isSignup && existing) {
+      st.user = existing;
+      save();
+      nav('feed');
+      return;
+    }
     st.user = {
       id: userId || 'me', name, username: (name || 'demo').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12) + '.k',
       email, phone: phone || '', verified: false, followers: 0, following: 0, posts: 0,
       bio: { fr: '', en: '', ln: '' }, color: '#9B1C28', since: Date.now(),
+      city: cityPicked, commune: '',
+      seenIntro: false,   // tutoriel : sur le compte, montré UNE seule fois à la création
+      interestsDone: false,
     };
+    // enregistrer le compte créé : permet la reconnexion sans perdre la progression
+    // (tutoriel vu, abonnés, posts…)
+    st.users.unshift(st.user);
     save();
     nav(isSignup ? 'onboarding' : 'feed');
   }
@@ -279,18 +341,18 @@ export function renderAuth(root, nav) {
   return () => { clearInterval(rot); clearInterval(timer); };
 }
 
-// ———————————————————— Onboarding : 5 questions ————————————————————
+// ———————————————————— Onboarding : 4 questions + ville confirmée ————————————————————
 export function renderOnboarding(root, nav) {
   const s = state();
-  const cats = Object.keys(t('feed.categories'));
+  const cats = Object.keys(t('feed.categories')).filter(c => c !== 'all');
   const catNames = t('feed.categories');
-  const answers = { cats: [], area: '', when: '', budget: '', role: '' };
+  const answers = { cats: [], when: '', budget: '', role: '' };
   let q = 0;
 
   root.innerHTML = `
   <div class="onboarding">
     <div class="ob-head">
-      <div class="ob-dots" id="obDots">${[0, 1, 2, 3, 4].map(i => `<span class="${i === 0 ? 'on' : ''}"></span>`).join('')}</div>
+      <div class="ob-dots" id="obDots">${[0, 1, 2, 3].map(i => `<span class="${i === 0 ? 'on' : ''}"></span>`).join('')}</div>
       <button class="link-btn" id="obSkip">${t('onboarding.skip')}</button>
     </div>
     <div class="ob-card card" id="obCard"></div>
@@ -314,41 +376,65 @@ export function renderOnboarding(root, nav) {
       $('#obNext').addEventListener('click', next); },
     () => { card.innerHTML = `
       <h2 class="t-h2 ob-title">${t('onboarding.q2')}</h2>
-      <div class="ob-chips wrap">${COMMUNES.map((c, i) => `<button class="tag-chip ob-com" data-c="${c}">${c}</button>`).join('')}</div>
-      <button class="btn btn-primary btn-block btn-lg mt-24" id="obNext">${t('common.next')}</button>`;
-      card.querySelectorAll('.ob-com').forEach(b => b.addEventListener('click', () => {
-        card.querySelectorAll('.ob-com').forEach(x => x.classList.remove('sel'));
-        b.classList.add('sel'); answers.area = b.dataset.c;
-      }));
-      $('#obNext').addEventListener('click', next); },
-    () => { card.innerHTML = `
-      <h2 class="t-h2 ob-title">${t('onboarding.q3')}</h2>
-      <div class="ob-big-choices">${[['week', t('onboarding.q3week')], ['weekend', t('onboarding.q3weekend')], ['both', t('onboarding.q3both')]].map(([v, l]) => `<button class="ob-big" data-v="${v}">${l}</button>`).join('')}</div>
+      <div class="ob-big-choices">${[['week', t('onboarding.q2week')], ['weekend', t('onboarding.q2weekend')], ['both', t('onboarding.q2both')]].map(([v, l]) => `<button class="ob-big" data-v="${v}">${l}</button>`).join('')}</div>
       <button class="btn btn-primary btn-block btn-lg mt-24" id="obNext">${t('common.next')}</button>`;
       card.querySelectorAll('.ob-big').forEach(b => b.addEventListener('click', () => { card.querySelectorAll('.ob-big').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); answers.when = b.dataset.v; }));
       $('#obNext').addEventListener('click', next); },
     () => { card.innerHTML = `
-      <h2 class="t-h2 ob-title">${t('onboarding.q4')}</h2>
-      <div class="ob-big-choices">${[['free', t('onboarding.q4free')], ['small', t('onboarding.q4small')], ['premium', t('onboarding.q4premium')]].map(([v, l]) => `<button class="ob-big" data-v="${v}">${l}</button>`).join('')}</div>
+      <h2 class="t-h2 ob-title">${t('onboarding.q3')}</h2>
+      <div class="ob-big-choices">${[['free', t('onboarding.q3free')], ['small', t('onboarding.q3small')], ['premium', t('onboarding.q3premium')]].map(([v, l]) => `<button class="ob-big" data-v="${v}">${l}</button>`).join('')}</div>
       <button class="btn btn-primary btn-block btn-lg mt-24" id="obNext">${t('common.next')}</button>`;
       card.querySelectorAll('.ob-big').forEach(b => b.addEventListener('click', () => { card.querySelectorAll('.ob-big').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); answers.budget = b.dataset.v; }));
       $('#obNext').addEventListener('click', next); },
     () => { card.innerHTML = `
-      <h2 class="t-h2 ob-title">${t('onboarding.q5')}</h2>
-      <div class="ob-big-choices">${[['attend', t('onboarding.q5attend')], ['organize', t('onboarding.q5organize')], ['both', t('onboarding.q5both')]].map(([v, l]) => `<button class="ob-big" data-v="${v}">${l}</button>`).join('')}</div>
+      <h2 class="t-h2 ob-title">${t('onboarding.q4')}</h2>
+      <div class="ob-big-choices">${[['attend', t('onboarding.q4attend')], ['organize', t('onboarding.q4organize')], ['both', t('onboarding.q4both')]].map(([v, l]) => `<button class="ob-big" data-v="${v}">${l}</button>`).join('')}</div>
       <button class="btn btn-primary btn-block btn-lg mt-24" id="obFinish">${t('onboarding.finish')}</button>`;
       card.querySelectorAll('.ob-big').forEach(b => b.addEventListener('click', () => { card.querySelectorAll('.ob-big').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); answers.role = b.dataset.v; }));
       $('#obFinish').addEventListener('click', finish); },
   ];
 
   function show() { dots(); card.classList.remove('ob-in'); void card.offsetWidth; card.classList.add('ob-in'); questions[q](); }
-  function next() { if (q < 4) { q++; show(); } }
+  function next() { if (q < 3) { q++; show(); } }
   function finish() {
-    s.onboarding = answers; save();
+    s.onboarding = answers;
+    s.user.interestsDone = true;
+    save();
     toast(t('onboarding.savedToast'), 'ok');
-    nav('feed');
+    // confirmation de la ville détectée/choisie à l'inscription
+    confirmCitySheet(() => nav('feed'));
   }
-  $('#obSkip').addEventListener('click', () => { s.onboarding = null; save(); toast(t('onboarding.skippedToast')); nav('feed'); });
+  $('#obSkip').addEventListener('click', () => { s.onboarding = null; s.user.interestsDone = true; save(); toast(t('onboarding.skippedToast')); confirmCitySheet(() => nav('feed')); });
+
+  // « Tu es à X ? Oui / Changer » — la ville vient de l'inscription
+  function confirmCitySheet(done) {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'sheet-backdrop show';
+    backdrop.innerHTML = `
+    <div class="sheet show" role="dialog" aria-modal="true" style="max-width:400px">
+      <div class="sheet-grip"></div>
+      <h2 class="t-h3 center">${icon('pin', 20)} ${t('loc.confirmCity', { city: s.user.city })}</h2>
+      <div class="ob-chips wrap center mt-16" id="ccList" style="display:none">
+        ${CITIES.map(c => `<button class="tag-chip ${c.name === s.user.city ? 'sel' : ''}" data-c="${c.name}">${c.name}</button>`).join('')}
+      </div>
+      <div class="flex gap-12 mt-16" id="ccBtns">
+        <button class="btn btn-primary" style="flex:1" id="ccYes">${t('loc.confirmYes')}</button>
+        <button class="btn btn-ghost" style="flex:1" id="ccChange">${t('loc.confirmChange')}</button>
+      </div>
+    </div>`;
+    document.body.appendChild(backdrop);
+    backdrop.querySelector('#ccYes').addEventListener('click', () => { save(); backdrop.remove(); done(); });
+    backdrop.querySelector('#ccChange').addEventListener('click', () => {
+      backdrop.querySelector('#ccList').style.display = '';
+      backdrop.querySelector('#ccBtns').style.display = 'none';
+      backdrop.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => {
+        s.user.city = b.dataset.c; save();
+        backdrop.querySelector('h2').textContent = t('loc.confirmCity', { city: s.user.city });
+        backdrop.querySelector('#ccList').style.display = 'none';
+        backdrop.querySelector('#ccBtns').style.display = '';
+      }));
+    });
+  }
 
   show();
 }

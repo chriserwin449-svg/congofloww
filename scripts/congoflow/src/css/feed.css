@@ -1,65 +1,273 @@
 /* ============================================================
-   CongoFlow — App : fil, fiche, cartes
+   CongoFlow — App : fil, carte-affiche, fiche
    ============================================================ */
 
-.feed-page { padding: 16px 14px 110px; max-width: 560px; margin: 0 auto; }
-.feed-head { text-align: center; margin-bottom: 12px; }
-.feed-greet { color: var(--red); font-weight: 600; letter-spacing: .02em; }
-.feed-title { font-size: 1.35rem; }
-.feed-search {
-  display: flex; align-items: center; gap: 8px; width: 100%;
-  background: var(--card); border: 1px solid rgba(14,14,16,.09); border-radius: 999px;
-  padding: 10px 16px; color: var(--gray); font-size: .88rem; margin-top: 12px;
-  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+.feed-page { max-width: 1240px; margin: 0 auto; padding: 10px 14px 8px; }
+.feed-head { text-align: center; margin-bottom: 2px; }
+.feed-greet { color: var(--red); font-weight: 600; letter-spacing: .02em; font-size: .8rem; }
+.feed-title { font-size: 1.25rem; }
+/* Mobile/tablette : le fil occupe EXACTEMENT l'écran (aucun scroll, aucun chevauchement) */
+@media (max-width: 1099px) {
+  .feed-page {
+    height: calc(100dvh - 68px - 128px - env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .feed-head { display: flex; align-items: baseline; justify-content: center; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+  .feed-greet { font-size: .78rem; }
+  .feed-title { font-size: 1.15rem; }
+  .fc-center { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .fc-center .tabs { flex-shrink: 0; margin-bottom: 8px; }
+  .cat-row { flex-shrink: 0; }
+  .feed-actions { flex-shrink: 0; margin-top: 10px; }
+  .kbd-hint { display: none !important; }
 }
-.feed-search:hover { border-color: rgba(155,28,40,.4); box-shadow: var(--sh-1); }
+
+/* ——— 3 colonnes (desktop ≥1100px) ——— */
+.feed-cols { display: block; }
+/* mobile/tablette : les colonnes latérales n'existent pas (leurs fonctions sont
+   dans l'en-tête (ville), les pastilles cat-row (filtres) et la page recherche (tendances) */
+.fc-left, .fc-right { display: none; }
+@media (min-width: 1100px) {
+  .feed-cols { display: grid; grid-template-columns: 280px minmax(440px, 520px) 280px; gap: 22px; justify-content: center; align-items: start; }
+  .fc-left, .fc-right { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 14px; }
+}
+.fc-center { min-width: 0; }
+/* dans le contexte flex mobile, la colonne centrale doit occuper toute la largeur */
+.feed-cols .fc-center { width: 100%; }
+
+/* Cartes des colonnes latérales */
+.fc-card { padding: 16px; }
+.fc-card .t-h3 { font-size: .95rem; margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
+.fc-card .t-h3 svg { color: var(--red); }
+.fc-city { display: flex; align-items: center; gap: 10px; }
+.fc-city > svg { color: var(--red); flex-shrink: 0; }
+.fc-city div { flex: 1; min-width: 0; }
+.fc-city strong { display: block; font-size: .98rem; }
+.fc-city .t-small { display: block; font-size: .74rem; line-height: 1.3; margin-top: 2px; }
+.fc-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.fc-filter {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1.5px solid rgba(14,14,16,.12); border-radius: 999px; background: var(--card);
+  padding: 6px 11px; font-size: .78rem; font-weight: 600; color: var(--ink);
+  transition: all var(--t-fast) var(--cf-ease);
+}
+.fc-filter.on { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.fc-filter.on svg { color: var(--bg); }
+.fc-trends { display: flex; flex-direction: column; gap: 2px; }
+.fc-trend {
+  padding: 7px 4px; font-weight: 600; color: var(--ink); border-radius: 8px;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.fc-trend:hover { background: rgba(155,28,40,.06); color: var(--red); }
+/* agenda */
+.fc-agenda-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 7px 4px; border-radius: 10px; transition: background var(--t-fast); }
+.fc-agenda-item:hover { background: rgba(14,14,16,.04); }
+.fa-date {
+  flex-shrink: 0; width: 42px; height: 46px; border-radius: 10px; background: var(--bg);
+  border: 1px solid rgba(14,14,16,.08); display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.fa-date b { font-size: .95rem; color: var(--red); line-height: 1; }
+.fa-date span { font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.fai-body { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fai-body strong { font-size: .84rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.fai-body .t-small { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; }
+/* comptes à suivre */
+.fc-follow { display: flex; align-items: center; gap: 9px; padding: 7px 0; }
+.fcf-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.fcf-body strong { font-size: .84rem; }
+.fcf-body .t-small { font-size: .72rem; }
 
 /* Avatars avec photo de profil */
 .ev-avatar { position: relative; overflow: hidden; }
 .ev-avatar.has-photo { background: none !important; }
 .ev-avatar.has-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ev-avatar { width: 26px; height: 26px; border-radius: 50%; color: #fff; font-size: .62rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ev-avatar.big { width: 44px; height: 44px; font-size: .95rem; }
 
-/* ——— Zone de swipe ——— */
-.swipe-zone { position: relative; height: min(66vh, 560px); min-height: 420px; touch-action: pan-y; }
-.card-stack { position: absolute; inset: 0; }
+/* ——— Onglets du fil ——— */
+.feed-cols .tabs { margin-bottom: 10px; }
+
+/* Rangée de pastilles catégories (mobile/tablette : défilante) */
+.cat-row {
+  display: flex; gap: 7px; overflow-x: auto; padding: 2px 2px 8px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.cat-row::-webkit-scrollbar { display: none; }
+@media (min-width: 1100px) { .cat-row { display: none; } }
+.cat-pill {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+  border: 1.5px solid rgba(14,14,16,.12); border-radius: 999px;
+  padding: 7px 13px; font-size: .8rem; font-weight: 700; color: var(--ink); background: var(--card);
+  transition: all var(--t-fast) var(--cf-ease);
+}
+.cat-pill:active { transform: scale(.94); }
+
+/* teintes douces par catégorie (dérivées de la palette, jamais criardes) */
+.cat-pill.on, .fc-filter.on { box-shadow: 0 4px 12px rgba(14,14,16,.08); }
+.cat-all.on { background: #0E0E10; border-color: #0E0E10; color: var(--bg); }
+.cat-all.on svg { color: var(--bg); }
+.cat-party.on { background: #F6E3DC; border-color: #D9A896; color: #7A3B24; }
+.cat-party.on svg { color: #A05236; }
+.cat-concert.on { background: #F2DDD6; border-color: #DBA9A0; color: #7A2A33; }
+.cat-concert.on svg { color: #9B4A54; }
+.cat-conference.on { background: #EDEAE2; border-color: #C9C3B4; color: #57523F; }
+.cat-conference.on svg { color: #7A7460; }
+.cat-sport.on { background: #F3EAD9; border-color: #D9C69A; color: #6E5A24; }
+.cat-sport.on svg { color: #97803A; }
+.cat-culture.on { background: #EFE6DA; border-color: #CFBB9F; color: #5F4E33; }
+.cat-culture.on svg { color: #83704F; }
+.cat-gastronomy.on { background: #F6ECDC; border-color: #DCC29A; color: #6E4E1E; }
+.cat-gastronomy.on svg { color: #9A7331; }
+.cat-fair.on { background: #F1DDE2; border-color: #D8AAB8; color: #6E3A4C; }
+.cat-fair.on svg { color: #9B5568; }
+.cat-church.on { background: #E9E9E1; border-color: #C4C6B5; color: #4F5240; }
+.cat-church.on svg { color: #71745E; }
+.cat-solidarity.on { background: #EAE6DE; border-color: #C6BEAD; color: #5B543F; }
+.cat-solidarity.on svg { color: #80775D; }
+
+/* ——— Zone de swipe + fond ambiant ——— */
+.swipe-zone {
+  position: relative;
+  /* hauteur : tout l'écran disponible moins en-tête, dock, boutons, onglets */
+  height: calc(100dvh - 68px - 128px - env(safe-area-inset-bottom) - 150px);
+  min-height: min(56dvh, 380px);
+  max-height: 640px;
+  touch-action: pan-y;
+  margin: 0 auto;
+  border-radius: var(--r-lg);
+}
+@media (min-width: 1100px) { .swipe-zone { max-height: 680px; } }
+/* écrans peu hauts : la carte rétrécit plutôt que déborder */
+@media (max-height: 740px) { .swipe-zone { min-height: 300px; height: calc(100dvh - 68px - 118px - 118px); } }
+@media (max-height: 620px) { .swipe-zone { min-height: 260px; height: calc(100dvh - 68px - 108px - 108px); } }
+
+/* halo par défaut (si l'image n'est pas chargée) */
+.ambient-glow {
+  position: absolute; inset: -8% -14%; z-index: 0; pointer-events: none;
+  border-radius: 40px;
+  background:
+    radial-gradient(ellipse 60% 45% at 12% 8%, rgba(94,15,26,.12), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 88% 92%, rgba(242,221,214,.55), rgba(217,138,43,.14) 60%, transparent 75%);
+  filter: blur(10px);
+  transition: background-image 900ms var(--cf-ease);
+}
+/* lueur de l'affiche en cours : très floue, agrandie, estompée sur les bords */
+.ambient-glow.has::after {
+  content: ''; position: absolute; inset: 0;
+  background-image: inherit; background-size: cover; background-position: center;
+  filter: blur(46px) saturate(1.25);
+  opacity: .35;
+  -webkit-mask-image: radial-gradient(ellipse 70% 62% at 50% 50%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(ellipse 70% 62% at 50% 50%, #000 30%, transparent 78%);
+  transition: opacity 900ms var(--cf-ease);
+}
+@media (max-width: 700px) {
+  .ambient-glow.has::after { opacity: .22; filter: blur(38px) saturate(1.15); }
+}
+
+/* éclat de couleur sur les bords au swipe */
+.swipe-zone.edge::before, .swipe-zone.edge::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 46px; z-index: 6; pointer-events: none;
+  opacity: 0; transition: opacity 120ms linear;
+}
+.swipe-zone.edge::before { left: 0; border-radius: var(--r-lg) 0 0 var(--r-lg); background: linear-gradient(90deg, rgba(90,90,98,.55), transparent); opacity: var(--edgeL, 0); }
+.swipe-zone.edge::after { right: 0; border-radius: 0 var(--r-lg) var(--r-lg) 0; background: linear-gradient(-90deg, rgba(155,28,40,.6), transparent); opacity: var(--edgeR, 0); }
+
+/* ——— Pile de cartes ——— */
+.card-stack { position: absolute; inset: 0; z-index: 1; }
 .sw-card { position: absolute; inset: 0; z-index: var(--z); pointer-events: none; }
 .sw-card.top { pointer-events: auto; cursor: grab; }
 .sw-card.top:active { cursor: grabbing; }
-.sw-card:not(.top) { transform: scale(calc(1 - var(--z) * .016)) translateY(calc(var(--z) * 9px)); opacity: calc(1 - var(--z) * .16); }
-
-.ev-card {
-  height: 100%; display: flex; flex-direction: column; overflow: hidden;
-  background: var(--card); border-radius: var(--r-lg); box-shadow: var(--sh-2);
-  border: 1px solid rgba(14,14,16,.05); user-select: none;
+/* les 2 cartes suivantes : réduites et décalées derrière */
+.sw-card:not(.top) {
+  transform: scale(calc(1 - (var(--z) - 1) * .05)) translateY(calc((var(--z) - 1) * 10px));
+  opacity: calc(1 - (var(--z) - 1) * .28);
 }
-.ev-media { position: relative; flex: 1 1 46%; min-height: 0; background: rgba(14,14,16,.05); }
-.ev-media img { width: 100%; height: 100%; object-fit: cover; }
-.ev-body { flex: 1 1 54%; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 7px; overflow: hidden; }
-.ev-top { display: flex; justify-content: space-between; align-items: center; }
-.ev-title { font-size: 1.12rem; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.ev-sub { color: var(--gray); font-size: .87rem; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-.ev-meta { display: flex; flex-direction: column; gap: 4px; font-size: .84rem; color: var(--gray); }
-.ev-org { display: inline-flex; align-items: center; gap: 7px; color: var(--ink); font-weight: 600; }
-.ev-avatar {
-  width: 26px; height: 26px; border-radius: 50%; color: #fff; font-size: .62rem; font-weight: 700;
-  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.ev-avatar.big { width: 44px; height: 44px; font-size: .95rem; }
-.ev-price { font-weight: 700; font-size: .88rem; color: var(--ink); background: rgba(14,14,16,.07); border-radius: 999px; padding: 4px 11px; }
-.ev-price.free { color: var(--ok); background: rgba(46,125,91,.1); }
-.ev-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; }
-.ev-tags .tag-chip { padding: 4px 10px; font-size: .76rem; }
+.sw-preview { height: 100%; border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--sh-2); background: var(--card); }
+.sw-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-lg); }
 
-/* Tampons J'AIME / PASSER */
-.stamps { position: absolute; inset: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 30px; }
+/* ——— Carte-affiche 4:5 ——— */
+.ev-poster {
+  position: relative; height: 100%; aspect-ratio: auto;
+  border-radius: var(--r-lg); overflow: visible;
+  box-shadow: var(--sh-3); user-select: none;
+}
+.evp-img-wrap { position: relative; height: 100%; border-radius: var(--r-lg); overflow: hidden; background: var(--card); }
+.evp-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.evp-gradient { position: absolute; inset: 0; background: linear-gradient(rgba(14,14,16,.22), transparent 26%, transparent 48%, rgba(14,14,16,.78)); pointer-events: none; }
+
+/* bloc date billet */
+.evp-date {
+  position: absolute; top: 14px; left: 14px; z-index: 3;
+  background: rgba(247,244,239,.96); border-radius: 14px; padding: 8px 12px; text-align: center; line-height: 1;
+  box-shadow: var(--sh-2);
+}
+.evp-date b { display: block; font-family: var(--display); font-size: 1.5rem; font-weight: 800; color: var(--red); }
+.evp-date span { display: block; font-size: .62rem; font-weight: 800; letter-spacing: .1em; color: var(--ink); margin-top: 3px; }
+
+/* badges haut droite */
+.evp-badges { position: absolute; top: 14px; right: 14px; z-index: 3; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.evp-when {
+  background: #A3640F; color: #fff; font-size: .72rem; font-weight: 800;
+  border-radius: 999px; padding: 5px 12px; letter-spacing: .02em; box-shadow: 0 4px 12px rgba(163,100,15,.4);
+}
+.evp-city {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(14,14,16,.68); color: #fff; backdrop-filter: blur(6px);
+  font-size: .72rem; font-weight: 700; border-radius: 999px; padding: 5px 11px;
+}
+
+/* panneau verre dépoli */
+.evp-panel {
+  position: absolute; left: 10px; right: 66px; bottom: 12px; z-index: 3;
+  background: rgba(247,244,239,.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(247,244,239,.5);
+  border-radius: 18px; padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.evp-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.evp-chips .badge-hype { font-size: .72rem; padding: 3px 9px; }
+.hype-gauge { display: inline-block; width: 34px; height: 4px; border-radius: 2px; background: rgba(163,100,15,.25); position: relative; overflow: hidden; }
+.hype-gauge::after { content: ''; position: absolute; inset: 0; width: var(--p, 20%); background: var(--amber); border-radius: 2px; }
+.evp-chips .ev-price { font-size: .72rem; padding: 3px 10px; }
+.evp-cat { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 700; background: rgba(14,14,16,.08); border-radius: 999px; padding: 3px 10px; }
+.evp-title { font-size: 1.14rem; line-height: 1.2; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.evp-sub { color: var(--gray); font-size: .8rem; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.evp-org { display: inline-flex; align-items: center; gap: 7px; color: var(--ink); font-weight: 600; font-size: .8rem; }
+
+/* ——— Rail d'actions vertical (droite, façon TikTok) ——— */
+.evp-rail {
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%); z-index: 5;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.rail-btn {
+  position: relative; width: 46px; padding: 8px 0 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  border-radius: 999px; color: var(--ink);
+  background: rgba(247,244,239,.82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(247,244,239,.55);
+  box-shadow: var(--sh-1);
+  font-size: .62rem; font-weight: 700;
+  transition: transform var(--t-fast) var(--cf-ease), color var(--t-fast), background var(--t-fast);
+}
+.rail-btn:hover { transform: scale(1.06); }
+.rail-btn:active { transform: scale(.9); }
+.rail-btn span { line-height: 1; }
+.rail-btn.on.rail-like, .rail-btn.on { color: var(--red); }
+.rail-boost { color: var(--amber-ink); }
+.rail-btn.boost-glow { animation: flame-btn 700ms var(--cf-ease); }
+.rail-btn .heart-pop { animation: heart-pop 480ms var(--cf-ease); }
+
+/* ——— Tampons J'AIME / PASSER ——— */
+.stamps { position: absolute; inset: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 30px; z-index: 7; }
 .stamp {
   padding: 7px 18px; border-radius: 12px; font-weight: 800; font-size: 1.25rem; letter-spacing: .06em;
   opacity: 0; transition: opacity 90ms linear; border: 4px solid; transform: rotate(-14deg);
 }
-.stamp.like { color: var(--ok); border-color: var(--ok); margin-right: 60px; }
-.stamp.pass { color: var(--err); border-color: var(--err); transform: rotate(14deg); margin-left: 60px; }
+.stamp.like { color: var(--red); border-color: var(--red); margin-right: 60px; }
+.stamp.pass { color: var(--gray); border-color: var(--gray); transform: rotate(14deg); margin-left: 60px; }
 
-/* ——— Actions sous la carte ——— */
+/* ——— Boutons d'action sous la pile (style Tinder) ——— */
 .feed-actions { display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 18px; }
 .fa {
   width: 52px; height: 52px; border-radius: 50%; background: var(--card); border: 1px solid rgba(14,14,16,.08);
@@ -68,12 +276,12 @@
 }
 .fa:hover { transform: translateY(-3px); box-shadow: var(--sh-2); }
 .fa:active { transform: scale(.9); }
-.fa-heart { width: 62px; height: 62px; color: var(--err); border-color: rgba(179,38,30,.25); }
-.fa-flame { color: var(--red); border-color: rgba(155,28,40,.25); }
+.fa-heart { width: 62px; height: 62px; color: var(--red); border-color: rgba(155,28,40,.3); }
+.fa-flame { color: var(--amber-ink); border-color: rgba(217,138,43,.4); }
 .fa-flame.boost-glow { animation: flame-btn 700ms var(--cf-ease); }
 @keyframes flame-btn {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(155,28,40,.5); }
-  45% { transform: scale(1.18); box-shadow: 0 0 26px 6px rgba(155,28,40,.45); }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(217,138,43,.5); }
+  45% { transform: scale(1.18); box-shadow: 0 0 26px 6px rgba(217,138,43,.45); }
   100% { transform: scale(1); }
 }
 .kbd-hint { text-align: center; margin-top: 14px; display: none; }
@@ -87,7 +295,7 @@
 .tut-ico { font-size: 2rem; margin-bottom: 10px; text-align: center; }
 
 /* ——— Fiche détaillée — PAGE ENTIÈRE (#/ev/:id) ——— */
-.ev-page { max-width: 720px; margin: 0 auto; padding-bottom: 130px; }
+.ev-page { max-width: 720px; margin: 0 auto; padding-bottom: 20px; }
 .evp-hero { position: relative; border-radius: 0 0 var(--r-lg) var(--r-lg); overflow: hidden; margin: 0 -14px; }
 .evp-hero img { width: 100%; max-height: 52vh; object-fit: cover; aspect-ratio: 16/10; }
 .evp-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(14,14,16,.35), transparent 30%, transparent 60%, rgba(14,14,16,.3)); }
@@ -105,6 +313,7 @@
 .evp-back:hover, .evp-share:hover { background: rgba(14,14,16,.8); }
 .evp-body { padding: 18px 4px 0; }
 .evp-title { font-size: clamp(1.5rem, 5vw, 2.1rem); margin-top: 10px; }
+.evp-body .evp-when { box-shadow: none; }
 .evp-actions {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
   display: flex; gap: 8px; padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
@@ -118,11 +327,12 @@
   .evp-actions { left: 50%; right: auto; transform: translateX(-50%); width: min(720px, 94vw); bottom: 18px; border-radius: 999px; border: 1px solid rgba(14,14,16,.07); box-shadow: var(--sh-2); }
 }
 
-/* (ancienne fiche en sheet — conservée pour le style .org-row/.detail-info réutilisé) */
+/* infos fiche */
 .sheet-wide { max-width: 720px; }
 .org-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
 .detail-info { margin-top: 16px; display: grid; gap: 12px; }
-.detail-info dt { font-weight: 700; font-size: .88rem; }
+.detail-info dt { font-weight: 700; font-size: .88rem; display: flex; align-items: center; gap: 6px; }
+.detail-info dt svg { color: var(--red); }
 .detail-info dd { color: var(--gray); font-size: .94rem; margin-top: 2px; }
 .map-box {
   margin-top: 8px; height: 110px; border-radius: var(--r-sm); position: relative; overflow: hidden;
@@ -130,7 +340,7 @@
   background-image: radial-gradient(rgba(14,14,16,.13) 1.3px, transparent 1.3px), linear-gradient(rgba(155,28,40,.12)1.4px, transparent 1.4px), linear-gradient(90deg, rgba(155,28,40,.12) 1.4px, transparent 1.4px);
   background-size: 26px 26px, 52px 52px, 52px 52px;
 }
-.map-pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -90%); font-size: 1.7rem; filter: drop-shadow(0 3px 5px rgba(0,0,0,.25)); animation: pin-bounce 2.2s ease-in-out infinite; }
+.map-pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -90%); color: var(--red); filter: drop-shadow(0 3px 5px rgba(0,0,0,.25)); animation: pin-bounce 2.2s ease-in-out infinite; }
 @keyframes pin-bounce { 0%,100% { transform: translate(-50%,-90%); } 50% { transform: translate(-50%,-105%); } }
 
 .comments { margin-top: 10px; display: flex; flex-direction: column; gap: 12px; max-height: 240px; overflow-y: auto; }
@@ -170,3 +380,21 @@
 .rep-opt.sel .rep-radio::after { content: ''; position: absolute; inset: 3.5px; border-radius: 50%; background: var(--red); }
 
 .btn.ghost-danger { color: var(--err); }
+
+/* ——— Reduced motion ——— */
+@media (prefers-reduced-motion: reduce) {
+  .ambient-glow, .ambient-glow.has::after { transition: none; }
+}
+
+/* ——— Ajustement final de la zone de swipe (APRÈS la définition de base : ces règles gagnent) ———
+   Mobile : la carte prend tout l'espace restant (jamais de scroll, jamais de chevauchement). */
+@media (max-width: 1099px) {
+  .swipe-zone { flex: 1 1 0; height: auto; min-height: 170px; max-height: none; width: 100%; align-self: stretch; }
+}
+/* Desktop : la colonne centrale a une hauteur fixe → les boutons restent au-dessus du dock */
+@media (min-width: 1100px) {
+  .fc-center { height: calc(100dvh - 68px - 140px); display: flex; flex-direction: column; }
+  .fc-center .tabs { flex-shrink: 0; margin-bottom: 8px; }
+  .swipe-zone { flex: 1 1 0; height: auto; min-height: 240px; max-height: none; width: 100%; }
+  .feed-actions, .kbd-hint { flex-shrink: 0; }
+}

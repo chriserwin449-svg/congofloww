@@ -1,10 +1,10 @@
-// CongoFlow — App shell : routeur, en-tête, navigation, états globaux, PWA
-import { t, tx, state, save, load, detectLang, ensureDemoEvents, setLang, avatarHTML } from './core.js';
+// CongoFlow — App shell : routeur, en-tête, dock de navigation, états globaux, PWA
+import { t, tx, state, save, load, detectLang, ensureDemoEvents, setLang, avatarHTML, CITIES, icon } from './core.js';
 import { renderLanding, LOGO_RED, legalPage } from './landing.js';
 import { renderAuth, renderOnboarding } from './auth.js';
 import { renderFeed, renderEventPage, ILLU } from './feed.js';
 import { renderPublish } from './publish.js';
-import { renderMine, renderActivity, renderProfile, renderLangPicker } from './pages.js';
+import { renderMine, renderActivity, renderProfile, renderLangPicker, cityPickerSheet } from './pages.js';
 import { renderSearch, renderTag } from './search.js';
 
 const $app = () => document.getElementById('app');
@@ -25,8 +25,6 @@ export function router() {
   const s = state();
 
   // ——— Ancres internes de la landing (Fonctionnalités / FAQ) ———
-  // Le routeur hash les intercepte : on rend la landing si besoin puis on scrolle
-  // en douceur vers la section, avec la compensation de la barre de navigation fixe.
   if (hash.startsWith('#/') === false && hash.length > 1) {
     const targetId = hash.slice(1); // features | faq | hero…
     const isLanding = !!document.querySelector('#landing');
@@ -34,7 +32,7 @@ export function router() {
     requestAnimationFrame(() => {
       const el = document.getElementById(targetId);
       if (el) {
-        const y = el.getBoundingClientRect().top + window.scrollY - 84; // hauteur nav + marge
+        const y = el.getBoundingClientRect().top + window.scrollY - 84;
         window.scrollTo({ top: Math.max(0, y), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       }
     });
@@ -67,10 +65,11 @@ export function router() {
   }
 
   // ——— App (connexion requise) ———
-  if (hash.startsWith('#/app') || hash.startsWith('#/tag/') || hash.startsWith('#/ev/')) {
+  if (hash.startsWith('#/app') || hash.startsWith('#/tag/') || hash.startsWith('#/ev/') || hash.startsWith('#/u/')) {
     if (!s.user) return location.hash = '#/auth';
     const sub = hash.startsWith('#/tag/') ? '/tag/' + hash.split('/')[2]
       : hash.startsWith('#/ev/') ? '/ev/' + hash.split('/')[2]
+      : hash.startsWith('#/u/') ? '/u/' + hash.split('/')[2]
       : (hash.replace('#/app', '') || '/feed');
     const parts = sub.split('/').filter(Boolean);
     const view = parts[0] || 'feed';
@@ -90,6 +89,7 @@ export function router() {
       case 'search': inner = () => renderSearch(main, nav); title = t('common.search'); break;
       case 'tag': inner = () => renderTag(main, nav, parts[1] || ''); break;
       case 'ev': inner = () => { renderEventPage(main, nav, parts[1] || ''); }; break;
+      case 'u': inner = () => { renderProfile(main, nav, parts[1] || ''); }; break;
       default:
         app.innerHTML = `
         <div class="notfound">
@@ -117,50 +117,78 @@ export function router() {
   afterRender('404');
 }
 
-// ——— En-tête + barre de navigation de l'app ———
+// ——— En-tête + dock de navigation ———
 function renderShell() {
   const s = state();
   const old = document.getElementById('appHeader'), oldb = document.getElementById('appNav');
   old?.remove(); oldb?.remove();
 
+  // En-tête : logo + ville | recherche (centre, desktop) | langue + avatar
   const header = document.createElement('header');
   header.className = 'app-header';
   header.id = 'appHeader';
   header.innerHTML = `
     <a href="#/app/feed" class="ah-logo" aria-label="CongoFlow">${LOGO_RED}</a>
+    <button class="ah-city" id="ahCity" aria-label="${t('loc.changeCity')}">${icon('pin', 14)} <span>${s.user.city || 'Kinshasa'}</span> ${icon('chevD', 12)}</button>
+    <button class="ah-search" id="ahSearch" aria-label="${t('common.search')}">
+      ${icon('search', 16)}
+      <span>${t('nav.searchPlaceholder')}</span>
+    </button>
     <div class="flex ai-c gap-8" style="margin-left:auto">
       <div class="lang-menu" id="langApp"></div>
       <a href="#/app/profile" class="ah-me" aria-label="${t('nav.profile')}">${avatarHTML(s.user)}</a>
     </div>`;
   document.body.prepend(header);
 
+  // Dock flottant à 5 cellules-orbes SÉPARÉES
   const bar = document.createElement('nav');
-  bar.className = 'app-nav';
+  bar.className = 'app-dock';
   bar.id = 'appNav';
   bar.setAttribute('aria-label', t('common.appName'));
-  const cur = ((location.hash.startsWith('#/tag/') ? 'search' : location.hash.startsWith('#/ev/') ? 'feed' : (location.hash.replace('#/app', '') || '/feed')).split('/')[1]) || 'feed';
+  const cur = ((location.hash.startsWith('#/tag/') ? 'search' : location.hash.startsWith('#/ev/') ? 'feed' : location.hash.startsWith('#/u/') ? 'profile' : (location.hash.replace('#/app', '') || '/feed')).split('/')[1]) || 'feed';
   const items = [
-    ['feed', t('nav.home'), 'M3 10.5L12 3l9 7.5V21h-6v-6h-6v6H3z'],
-    ['mine', t('nav.mine'), 'M4 5h16v2H4zM4 10h10v2H4zM4 15h13v2H4z'],
-    ['__add', '', ''],
-    ['activity', t('nav.activity'), 'M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M13.7 21a2 2 0 0 1-3.4 0'],
-    ['profile', t('nav.profile'), 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
+    ['feed', t('nav.home'), 'home'],
+    ['mine', t('nav.mine'), 'calendar'],
+    ['__add', t('nav.publish'), 'plus'],
+    ['activity', t('nav.activity'), 'bell'],
+    ['profile', t('nav.profile'), 'user'],
   ];
-  bar.innerHTML = items.map(([id, label, d]) => {
-    if (id === '__add') return `<a href="#/app/publish" class="an-add" aria-label="${t('nav.publish')}"><span>＋</span></a>`;
+  bar.innerHTML = items.map(([id, label, ic]) => {
+    if (id === '__add') return `<a href="#/app/publish" class="dock-cell dock-add" aria-label="${t('nav.publish')}" data-tip="${label}">${icon(ic, 26)}</a>`;
     const on = cur === id || (id === 'feed' && cur === 'ev');
-    return `<a href="#/app/${id}" class="an-item ${on ? 'on' : ''}" aria-current="${on ? 'page' : 'false'}">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="${d}" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>${label}</span>
-      ${id === 'activity' && s.notifs.some(n => !n.read) ? '<span class="notif-dot"></span>' : ''}
+    return `<a href="#/app/${id}" class="dock-cell ${on ? 'on' : ''}" aria-current="${on ? 'page' : 'false'}" data-tip="${label}">
+      ${icon(ic, 24)}
+      <span class="dock-label" aria-hidden="true">${label}</span>
+      ${id === 'activity' && s.notifs.some(n => !n.read) ? '<span class="notif-dot dock-dot"></span>' : ''}
     </a>`;
   }).join('');
   document.body.appendChild(bar);
 
+  // Pastille notification qui pulse une fois à l'arrivée
+  const dot = bar.querySelector('.dock-dot');
+  if (dot) { dot.classList.add('pulse'); setTimeout(() => dot.classList.remove('pulse'), 950); }
+
+  // Recherche centrale → page recherche
+  header.querySelector('#ahSearch').addEventListener('click', () => { location.hash = '#/app/search'; });
+  // Sélecteur de ville (en-tête)
+  header.querySelector('#ahCity').addEventListener('click', () => cityPickerSheet(() => router()));
+
   renderLangPicker(header.querySelector('#langApp'), () => router());
+
+  // Le dock se réduit au scroll vers le bas, revient en remontant
+  let lastY = window.scrollY;
+  const onScroll = () => {
+    const y = window.scrollY;
+    if (y > lastY + 14 && y > 220) bar.classList.add('slim');
+    else if (y < lastY - 14) bar.classList.remove('slim');
+    lastY = y;
+  };
+  addEventListener('scroll', onScroll, { passive: true });
+  const prevCleanup = cleanupFn;
+  cleanupFn = () => { try { prevCleanup?.(); } catch (e) {} removeEventListener('scroll', onScroll); };
 }
 
-// ————— Après chaque rendu : observer reveals, etc. —————
+// ————— Après chaque rendu : retirer le shell app —————
 function afterRender(kind) {
   document.getElementById('appHeader')?.remove();
   document.getElementById('appNav')?.remove();
@@ -192,7 +220,6 @@ function initDots() {
   const GAP = 26, R = 1.4;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // le canvas suit la section hero de la landing (s'il y en a une)
   const heroEl = () => document.querySelector('#hero');
 
   function resize() {
@@ -207,7 +234,6 @@ function initDots() {
     for (let y = GAP / 2; y < H; y += GAP) for (let x = GAP / 2; x < W; x += GAP) dots.push({ x, y });
   }
   function place() {
-    // positionne le canvas sur le hero (absolu par rapport à la page)
     const hero = heroEl();
     if (!hero) return;
     const r = hero.getBoundingClientRect();
@@ -218,7 +244,7 @@ function initDots() {
   }
   let rafOn = true;
   function draw() {
-    if (!heroEl()) { rafOn = false; return; }   // hors landing : stoppe la boucle
+    if (!heroEl()) { rafOn = false; return; }
     ctx.clearRect(0, 0, W, H);
     const hot = !reduce;
     for (const d of dots) {
@@ -248,7 +274,6 @@ function initDots() {
   addEventListener('pointerleave', () => { mouse.x = -999; mouse.y = -999; });
   watch();
   draw();
-  // redémarre la boucle si on revient sur la landing
   setInterval(() => { if (heroEl() && !rafOn) { rafOn = true; watch(); draw(); } }, 800);
 }
 
@@ -263,7 +288,7 @@ function initNetwork() {
     el.classList.toggle('show', off);
     el.classList.toggle('ok', !off);
     el.querySelector('.nb-dot').style.background = off ? '' : 'var(--bg)';
-    el.querySelector('#nbTxt').textContent = off ? '⚠︎ ' + t('states.offlineTitle') : '✓ ' + t('states.backOnline');
+    el.querySelector('#nbTxt').textContent = off ? t('states.offlineTitle') : t('states.backOnline');
     if (!off) setTimeout(() => el.classList.remove('show'), 2600);
   };
   addEventListener('offline', () => show(true));
@@ -271,13 +296,12 @@ function initNetwork() {
   if (!navigator.onLine) setTimeout(() => show(true), 800);
 }
 
-// ————— PWA : manifeste inline + service worker minimal + bouton installer —————
+// ————— PWA : manifeste inline + bouton installer —————
 function initPWA() {
-  // manifest en blob (application installable sans fichier séparé)
   const manifest = {
     name: 'CongoFlow', short_name: 'CongoFlow', start_url: '.', display: 'standalone',
     background_color: '#F7F4EF', theme_color: '#9B1C28', lang: 'fr',
-    description: 'Découvre, aime et publie des événements à Kinshasa.',
+    description: 'Les événements du Congo, au même endroit.',
     icons: [{ src: CF_IMG['icon-192'] || '', sizes: '192x192', type: 'image/png' }, { src: CF_IMG['icon-512'] || '', sizes: '512x512', type: 'image/png' }]
   };
   const link = document.createElement('link');
@@ -285,28 +309,23 @@ function initPWA() {
   link.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/json' }));
   document.head.appendChild(link);
 
-  // Événements aimés consultables hors connexion : ils sont déjà dans localStorage,
-  // on affiche une note la première fois que l'app est chargée hors ligne.
   let tip = document.createElement('div');
   tip.className = 'pwa-tip hidden';
   document.body.appendChild(tip);
 
-  // Bouton d'installation (avantinstallprompt)
   let deferred = null;
   addEventListener('beforeinstallprompt', e => {
     e.preventDefault(); deferred = e;
     tip.classList.remove('hidden');
     tip.innerHTML = `<div class="install-tip">
-      <span class="so-ico" style="background:var(--red)">📥</span>
+      <span class="so-ico" style="background:var(--red)">${icon('download', 18)}</span>
       <div style="flex:1"><strong class="small">${t('pwa.installTitle')}</strong><br><span class="t-small">${t('pwa.installText')}</span></div>
       <button class="btn btn-primary btn-sm" id="pwaYes">${t('pwa.installBtn')}</button>
-      <button class="icon-btn" id="pwaNo" aria-label="${t('pwa.later')}">✕</button>
+      <button class="icon-btn" id="pwaNo" aria-label="${t('pwa.later')}">${icon('close', 16)}</button>
     </div>`;
     tip.querySelector('#pwaYes').addEventListener('click', async () => { deferred?.prompt(); deferred = null; tip.classList.add('hidden'); });
     tip.querySelector('#pwaNo').addEventListener('click', () => tip.classList.add('hidden'));
   });
-  // Rappel offline-ready après le premier like
-  addEventListener('storage', () => {});
 }
 
 // ————— Démarrage —————
